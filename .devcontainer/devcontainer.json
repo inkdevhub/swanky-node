@@ -15,7 +15,7 @@
     9944
   ],
   "onCreateCommand": ["cargo build", "cargo check"],
-  "postStartCommand": "./target/debug/node-template --dev --ws-external",
+  "postStartCommand": "./target/debug/swanky-node --dev --ws-external",
   "menuActions": [
     {"id": "polkadotjs",
      "label": "Open PolkadotJS Apps",
