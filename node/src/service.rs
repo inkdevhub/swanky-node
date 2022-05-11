@@ -206,8 +206,7 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 				Ok(sp_timestamp::InherentDataProvider::from_system_time())
 			},
 		};
-
-		log::
+		
 		task_manager
 			.spawn_essential_handle()
 			.spawn_blocking("instant-seal", None, sc_consensus_manual_seal::run_instant_seal(params));
