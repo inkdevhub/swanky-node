@@ -7,6 +7,9 @@ pub struct Cli {
 
 	#[clap(flatten)]
 	pub run: RunCmd,
+
+	#[clap(long)]
+	pub instant_seal: bool,
 }
 
 #[derive(Debug, clap::Subcommand)]
