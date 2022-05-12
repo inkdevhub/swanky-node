@@ -1,14 +1,10 @@
 # Swanky Node
 
-[![Try on playground](https://img.shields.io/badge/Playground-Node_Template-brightgreen?logo=Parity%20Substrate)](https://docs.substrate.io/playground/) [![Matrix](https://img.shields.io/matrix/substrate-technical:matrix.org)](https://matrix.to/#/#substrate-technical:matrix.org)
-
-A fresh FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacking :rocket:
+Swanky node is the Substrate based blockchain configured to enable `pallet-contracts` and more features to help Wasm Smart Contract development.
 
 ## Getting Started
 
-Follow the steps below to get started with the swanky node, or get it up and running right from
-your browser in just a few clicks using
-the [Substrate Playground](https://docs.substrate.io/playground/) :hammer_and_wrench:
+Follow the steps below to get started with the swanky node :hammer_and_wrench:
 
 ### Using Nix
 
@@ -103,6 +99,12 @@ $ ls ./my-chain-state/chains/dev
 db keystore network
 ```
 
+### Show only Errors and Contract Debug Output
+To have only errors and contract debug output show up on the console you can supply `-lerror,runtime::contracts=debug` when starting the node.
+
+Important: Debug output is only printed for RPC calls or off-chain tests ‒ not for transactions!
+
+See our FAQ for more details: How do I print something to the console from the runtime?.
 
 ### Connect with Polkadot-JS Apps Front-end
 
@@ -110,82 +112,6 @@ Once the swanky node is running locally, you can connect it with **Polkadot-JS A
 to interact with your chain. [Click
 here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connecting the Apps to your
 local swanky.
-
-### Multi-Node Local Testnet
-
-If you want to see the multi-node consensus algorithm in action, refer to our
-[Start a Private Network tutorial](https://docs.substrate.io/tutorials/v3/private-network).
-
-## Swanky Node Structure
-
-A Substrate project such as this consists of a number of components that are spread across a few
-directories.
-
-### Node
-
-A blockchain node is an application that allows users to participate in a blockchain network.
-Substrate-based blockchain nodes expose a number of capabilities:
-
-- Networking: Substrate nodes use the [`libp2p`](https://libp2p.io/) networking stack to allow the
-  nodes in the network to communicate with one another.
-- Consensus: Blockchains must have a way to come to
-  [consensus](https://docs.substrate.io/v3/advanced/consensus) on the state of the
-  network. Substrate makes it possible to supply custom consensus engines and also ships with
-  several consensus mechanisms that have been built on top of
-  [Web3 Foundation research](https://research.web3.foundation/en/latest/polkadot/NPoS/index.html).
-- RPC Server: A remote procedure call (RPC) server is used to interact with Substrate nodes.
-
-There are several files in the `node` directory - take special note of the following:
-
-- [`chain_spec.rs`](./node/src/chain_spec.rs): A
-  [chain specification](https://docs.substrate.io/v3/runtime/chain-specs) is a
-  source code file that defines a Substrate chain's initial (genesis) state. Chain specifications
-  are useful for development and testing, and critical when architecting the launch of a
-  production chain. Take note of the `development_config` and `testnet_genesis` functions, which
-  are used to define the genesis state for the local development chain configuration. These
-  functions identify some
-  [well-known accounts](https://docs.substrate.io/v3/tools/subkey#well-known-keys)
-  and use them to configure the blockchain's initial state.
-- [`service.rs`](./node/src/service.rs): This file defines the node implementation. Take note of
-  the libraries that this file imports and the names of the functions it invokes. In particular,
-  there are references to consensus-related topics, such as the
-  [longest chain rule](https://docs.substrate.io/v3/advanced/consensus#longest-chain-rule),
-  the [Aura](https://docs.substrate.io/v3/advanced/consensus#aura) block authoring
-  mechanism and the
-  [GRANDPA](https://docs.substrate.io/v3/advanced/consensus#grandpa) finality
-  gadget.
-
-After the node has been [built](#build), refer to the embedded documentation to learn more about the
-capabilities and configuration parameters that it exposes:
-
-```shell
-./target/release/swanky-node --help
-```
-
-### Runtime
-
-In Substrate, the terms
-"[runtime](https://docs.substrate.io/v3/getting-started/glossary#runtime)" and
-"[state transition function](https://docs.substrate.io/v3/getting-started/glossary#state-transition-function-stf)"
-are analogous - they refer to the core logic of the blockchain that is responsible for validating
-blocks and executing the state changes they define. The Substrate project in this repository uses
-the [FRAME](https://docs.substrate.io/v3/runtime/frame) framework to construct a
-blockchain runtime. FRAME allows runtime developers to declare domain-specific logic in modules
-called "pallets". At the heart of FRAME is a helpful
-[macro language](https://docs.substrate.io/v3/runtime/macros) that makes it easy to
-create pallets and flexibly compose them to create blockchains that can address
-[a variety of needs](https://www.substrate.io/substrate-users/).
-
-Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this template and note
-the following:
-
-- This file configures several pallets to include in the runtime. Each pallet configuration is
-  defined by a code block that begins with `impl $PALLET_NAME::Config for Runtime`.
-- The pallets are composed into a single runtime by way of the
-  [`construct_runtime!`](https://crates.parity.io/frame_support/macro.construct_runtime.html)
-  macro, which is part of the core
-  [FRAME Support](https://docs.substrate.io/v3/runtime/frame#support-crate)
-  library.
 
 ### Run in Docker
 
@@ -213,3 +139,54 @@ by appending your own. A few useful ones are as follow.
 # Check whether the code is compilable
 ./scripts/docker_run.sh cargo check
 ```
+
+## Consensus (Manual Seal & Instant Seal)
+Unlike other blockchains, Swanky node adopts block authioring and finalized gadget called Manual (& Instant) Seal, consensus which is suitable for contract development and testing.
+
+Manual seal: Where there is one author and it authors a block whenever you tell it via an RPC call.
+Instant seal: Where there is one author and it attempts to author a block as soon as it sees a transaction in the pool, most often leading to one transaction per block
+
+### Using Manual Seal
+```bash
+./target/release/swanky-node --dev
+```
+
+Once your node is running, you will see that it just sits there idly. It will accept transactions to the pool, but it will not author blocks on its own. In manual seal, the node does not author a block until we explicitly tell it to. We can tell it to author a block by calling the `engine_createBlock` RPC.
+
+```bash
+$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"engine_createBlock",
+      "params": [true, false, null]
+    }'
+```
+
+#### Params
+- **Create Empty**
+`create_empty` is a Boolean value indicating whether empty blocks may be created. Setting `create-empty` to true does not mean that an empty block will necessarily be created. Rather it means that the engine should go ahead creating a block even if no transaction are present. If transactions are present in the queue, they will be included regardless of `create_empty`'s value.'
+
+- **Finalize**
+`finalize` is a Boolean indicating whether the block (and its ancestors, recursively) should be finalized after creation. Manually controlling finality is interesting, but also dangerous. If you attempt to author and finalize a block that does not build on the best finalized chain, the block will not be imported. If you finalize one block in one node, and a conflicting block in another node, you will cause a safety violation when the nodes synchronize.
+
+- **Parent Hash**
+`parent_hash` is an optional hash of a block to use as a parent. To set the parent, use the format `"0x0e0626477621754200486f323e3858cd5f28fcbe52c69b2581aecb622e384764"`. To omit the parent, use `null`. When the parent is omitted the block is built on the current best block. Manually specifying the parent is useful for constructing fork scenarios and demonstrating chain reorganizations.
+
+#### Manually Finalizing Blocks
+In addition to finalizing blocks while creating them, they can be finalized later by using the second provided RPC call, `engine_finalizeBlock`.
+
+```bash
+$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"engine_finalizeBlock",
+      "params": ["0x0e0626477621754200486f323e3858cd5f28fcbe52c69b2581aecb622e384764", null]
+    }'
+```
+
+### Using Instant Seal
+```bash
+./target/release/swanky-node --dev --instant-seal
+```
+
+As soon as transaction gets pooled, blocks are instantly created.
