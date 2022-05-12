@@ -7,6 +7,7 @@
 
 use std::sync::Arc;
 
+use futures::channel::mpsc::Sender;
 use swanky_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index, Hash};
 use pallet_contracts_rpc::{Contracts, ContractsApi};
 
@@ -15,6 +16,10 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sc_consensus_manual_seal::{
+	rpc::{ManualSeal, ManualSealApi},
+	EngineCommand,
+};
 
 /// Full client dependencies.
 pub struct FullDeps<C, P> {
@@ -24,6 +29,10 @@ pub struct FullDeps<C, P> {
 	pub pool: Arc<P>,
 	/// Whether to deny unsafe calls
 	pub deny_unsafe: DenyUnsafe,
+	/// If instant seal or manaul seal
+	pub instant_seal: bool,
+	/// A command stream to send authoring commands to manual seal consensus engine
+	pub command_sink: Sender<EngineCommand<Hash>>,
 }
 
 /// Instantiate all full RPC extensions.
@@ -42,7 +51,7 @@ where
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
-	let FullDeps { client, pool, deny_unsafe } = deps;
+	let FullDeps { client, pool, deny_unsafe, instant_seal, command_sink } = deps;
 
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
 
@@ -54,6 +63,15 @@ where
 	// `YourRpcStruct` should have a reference to a client, which is needed
 	// to call into the runtime.
 	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
+
+	if !instant_seal {
+		// The final RPC extension receives commands for the manual seal consensus engine.
+		io.extend_with(
+			// We provide the rpc handler with the sending end of the channel to allow the rpc
+			// send EngineCommands to the background block authorship task.
+			ManualSealApi::to_delegate(ManualSeal::new(command_sink)),
+		);
+	}
 
 	io
 }

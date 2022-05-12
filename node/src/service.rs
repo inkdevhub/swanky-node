@@ -6,7 +6,6 @@ use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use std::{sync::Arc};
-
 // Our native executor instance.
 pub struct ExecutorDispatch;
 
@@ -116,7 +115,7 @@ fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
+pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager, ServiceError> {
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -160,6 +159,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	}
 
 	let prometheus_registry = config.prometheus_registry().cloned();
+	let (command_sink, commands_stream) = futures::channel::mpsc::channel(1000);
 
 	let rpc_extensions_builder = {
 		let client = client.clone();
@@ -167,7 +167,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 
 		Box::new(move |deny_unsafe, _| {
 			let deps =
-				crate::rpc::FullDeps { client: client.clone(), pool: pool.clone(), deny_unsafe };
+				crate::rpc::FullDeps { client: client.clone(), pool: pool.clone(), deny_unsafe, instant_seal, command_sink: command_sink.clone() };
 
 			Ok(crate::rpc::create_full(deps))
 		})
@@ -194,23 +194,39 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		telemetry.as_ref().map(|x| x.handle()),
 	);
 
-	let params = sc_consensus_manual_seal::InstantSealParams {
-		block_import: client.clone(),
-		env: proposer,
-		client,
-		pool: transaction_pool,
-		select_chain,
-		consensus_data_provider: None,
-		create_inherent_data_providers: move |_, ()| async move {
-			Ok(sp_timestamp::InherentDataProvider::from_system_time())
-		},
+	if instant_seal {
+		let params = sc_consensus_manual_seal::InstantSealParams {
+			block_import: client.clone(),
+			env: proposer,
+			client,
+			pool: transaction_pool,
+			select_chain,
+			consensus_data_provider: None,
+			create_inherent_data_providers: move |_, ()| async move {
+				Ok(sp_timestamp::InherentDataProvider::from_system_time())
+			},
+		};
+		
+		task_manager
+			.spawn_essential_handle()
+			.spawn_blocking("instant-seal", None, sc_consensus_manual_seal::run_instant_seal(params));
+	} else {
+		let params = sc_consensus_manual_seal::ManualSealParams {
+			block_import: client.clone(),
+			env: proposer,
+			client,
+			pool: transaction_pool,
+			commands_stream,
+			select_chain,
+			consensus_data_provider: None,
+			create_inherent_data_providers: move |_, ()| async move {
+				Ok(sp_timestamp::InherentDataProvider::from_system_time())
+			},
+		};
+		task_manager
+			.spawn_essential_handle()
+			.spawn_blocking("manual-seal", None, sc_consensus_manual_seal::run_manual_seal(params));
 	};
-
-	let authorship_future = sc_consensus_manual_seal::run_instant_seal(params);
-
-	task_manager
-		.spawn_essential_handle()
-		.spawn_blocking("instant-seal", None, authorship_future);
 
 	network_starter.start_network();
 	Ok(task_manager)

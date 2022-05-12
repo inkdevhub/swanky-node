@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Substrate Node".into()
+		"Swanky Node".into()
 	}
 
 	fn impl_version() -> String {
@@ -32,7 +32,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn copyright_start_year() -> i32 {
-		2017
+		2022
 	}
 
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
@@ -159,9 +159,10 @@ pub fn run() -> sc_cli::Result<()> {
 				You can enable it with `--features try-runtime`."
 			.into()),
 		None => {
+			let instant_seal = cli.instant_seal;
 			let runner = cli.create_runner(&cli.run)?;
 			runner.run_node_until_exit(|config| async move {
-				service::new_full(config).map_err(sc_cli::Error::Service)
+				service::new_full(config, instant_seal).map_err(sc_cli::Error::Service)
 			})
 		},
 	}
