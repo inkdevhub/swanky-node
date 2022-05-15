@@ -137,7 +137,8 @@ pub fn run() -> sc_cli::Result<()> {
 
 						cmd.run(config, client, inherent_benchmark_data()?, Arc::new(ext_builder))
 					},
-					BenchmarkCmd::Machine(cmd) => cmd.run(&config),
+					// BenchmarkCmd::Machine is not available in polkadot-v0.9.19
+					// BenchmarkCmd::Machine(cmd) => cmd.run(&config)
 				}
 			})
 		},
