@@ -1,11 +1,11 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
-use swanky_runtime::{self, opaque::Block, RuntimeApi};
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-use std::{sync::Arc};
+use std::sync::Arc;
+use swanky_runtime::{self, opaque::Block, RuntimeApi};
 // Our native executor instance.
 pub struct ExecutorDispatch;
 
@@ -166,8 +166,13 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 		let pool = transaction_pool.clone();
 
 		Box::new(move |deny_unsafe, _| {
-			let deps =
-				crate::rpc::FullDeps { client: client.clone(), pool: pool.clone(), deny_unsafe, instant_seal, command_sink: command_sink.clone() };
+			let deps = crate::rpc::FullDeps {
+				client: client.clone(),
+				pool: pool.clone(),
+				deny_unsafe,
+				instant_seal,
+				command_sink: command_sink.clone(),
+			};
 
 			Ok(crate::rpc::create_full(deps))
 		})
@@ -206,10 +211,12 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 				Ok(sp_timestamp::InherentDataProvider::from_system_time())
 			},
 		};
-		
-		task_manager
-			.spawn_essential_handle()
-			.spawn_blocking("instant-seal", None, sc_consensus_manual_seal::run_instant_seal(params));
+
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"instant-seal",
+			None,
+			sc_consensus_manual_seal::run_instant_seal(params),
+		);
 	} else {
 		let params = sc_consensus_manual_seal::ManualSealParams {
 			block_import: client.clone(),
@@ -223,9 +230,11 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 				Ok(sp_timestamp::InherentDataProvider::from_system_time())
 			},
 		};
-		task_manager
-			.spawn_essential_handle()
-			.spawn_blocking("manual-seal", None, sc_consensus_manual_seal::run_manual_seal(params));
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"manual-seal",
+			None,
+			sc_consensus_manual_seal::run_manual_seal(params),
+		);
 	};
 
 	network_starter.start_network();

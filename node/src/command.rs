@@ -5,10 +5,10 @@ use crate::{
 	service,
 };
 use frame_benchmarking_cli::BenchmarkCmd;
-use swanky_runtime::Block;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
 use std::sync::Arc;
+use swanky_runtime::Block;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
