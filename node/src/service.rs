@@ -115,7 +115,7 @@ fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager, ServiceError> {
+pub fn new_full(config: Configuration, manual_seal: bool) -> Result<TaskManager, ServiceError> {
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -170,7 +170,7 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 				client: client.clone(),
 				pool: pool.clone(),
 				deny_unsafe,
-				instant_seal,
+				manual_seal,
 				command_sink: command_sink.clone(),
 			};
 
@@ -199,25 +199,7 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 		telemetry.as_ref().map(|x| x.handle()),
 	);
 
-	if instant_seal {
-		let params = sc_consensus_manual_seal::InstantSealParams {
-			block_import: client.clone(),
-			env: proposer,
-			client,
-			pool: transaction_pool,
-			select_chain,
-			consensus_data_provider: None,
-			create_inherent_data_providers: move |_, ()| async move {
-				Ok(sp_timestamp::InherentDataProvider::from_system_time())
-			},
-		};
-
-		task_manager.spawn_essential_handle().spawn_blocking(
-			"instant-seal",
-			None,
-			sc_consensus_manual_seal::run_instant_seal(params),
-		);
-	} else {
+	if manual_seal {
 		let params = sc_consensus_manual_seal::ManualSealParams {
 			block_import: client.clone(),
 			env: proposer,
@@ -234,6 +216,24 @@ pub fn new_full(config: Configuration, instant_seal: bool) -> Result<TaskManager
 			"manual-seal",
 			None,
 			sc_consensus_manual_seal::run_manual_seal(params),
+		);
+	} else {
+		let params = sc_consensus_manual_seal::InstantSealParams {
+			block_import: client.clone(),
+			env: proposer,
+			client,
+			pool: transaction_pool,
+			select_chain,
+			consensus_data_provider: None,
+			create_inherent_data_providers: move |_, ()| async move {
+				Ok(sp_timestamp::InherentDataProvider::from_system_time())
+			},
+		};
+
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"instant-seal",
+			None,
+			sc_consensus_manual_seal::run_instant_seal(params),
 		);
 	};
 
