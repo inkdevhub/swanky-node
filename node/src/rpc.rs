@@ -29,8 +29,8 @@ pub struct FullDeps<C, P> {
 	pub pool: Arc<P>,
 	/// Whether to deny unsafe calls
 	pub deny_unsafe: DenyUnsafe,
-	/// If instant seal or manaul seal
-	pub instant_seal: bool,
+	/// If manual seal or manaul seal
+	pub manual_seal: bool,
 	/// A command stream to send authoring commands to manual seal consensus engine
 	pub command_sink: Sender<EngineCommand<Hash>>,
 }
@@ -51,7 +51,7 @@ where
 	use substrate_frame_rpc_system::{FullSystem, SystemApi};
 
 	let mut io = jsonrpc_core::IoHandler::default();
-	let FullDeps { client, pool, deny_unsafe, instant_seal, command_sink } = deps;
+	let FullDeps { client, pool, deny_unsafe, manual_seal, command_sink } = deps;
 
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
 
@@ -64,7 +64,7 @@ where
 	// to call into the runtime.
 	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
 
-	if !instant_seal {
+	if manual_seal {
 		// The final RPC extension receives commands for the manual seal consensus engine.
 		io.extend_with(
 			// We provide the rpc handler with the sending end of the channel to allow the rpc

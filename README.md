@@ -6,13 +6,6 @@ Swanky node is the Substrate based blockchain configured to enable `pallet-contr
 
 Follow the steps below to get started with the swanky node :hammer_and_wrench:
 
-### Using Nix
-
-Install [nix](https://nixos.org/) and optionally [direnv](https://github.com/direnv/direnv) and
-[lorri](https://github.com/target/lorri) for a fully plug and play experience for setting up the
-development environment. To get all the correct dependencies activate direnv `direnv allow` and
-lorri `lorri shell`.
-
 ### Rust Setup
 
 First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
@@ -146,9 +139,19 @@ Unlike other blockchains, Swanky node adopts block authioring and finalized gadg
 Manual seal: Where there is one author and it authors a block whenever you tell it via an RPC call.
 Instant seal: Where there is one author and it attempts to author a block as soon as it sees a transaction in the pool, most often leading to one transaction per block
 
-### Using Manual Seal
+By default, instant seal is used.
+
+### Using Instant Seal
 ```bash
 ./target/release/swanky-node --dev
+```
+
+As soon as transaction gets pooled, blocks are instantly created.
+
+
+### Using Manual Seal
+```bash
+./target/release/swanky-node --dev --manual-seal
 ```
 
 Once your node is running, you will see that it just sits there idly. It will accept transactions to the pool, but it will not author blocks on its own. In manual seal, the node does not author a block until we explicitly tell it to. We can tell it to author a block by calling the `engine_createBlock` RPC.
@@ -183,10 +186,3 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
       "params": ["0x0e0626477621754200486f323e3858cd5f28fcbe52c69b2581aecb622e384764", null]
     }'
 ```
-
-### Using Instant Seal
-```bash
-./target/release/swanky-node --dev --instant-seal
-```
-
-As soon as transaction gets pooled, blocks are instantly created.
