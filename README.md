@@ -2,6 +2,11 @@
 
 Swanky node is the Substrate based blockchain configured to enable `pallet-contracts` and more features to help Wasm Smart Contract development.
 
+## Features
+- pallet-contracts enabled
+- Instant seal and Manual seal is used for Consensus. No aura and grandpa.
+- dApps staking
+
 ## Getting Started
 
 Follow the steps below to get started with the swanky node :hammer_and_wrench:
