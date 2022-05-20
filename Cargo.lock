@@ -4007,7 +4007,7 @@ dependencies = [
 [[package]]
 name = "pallet-dapps-staking"
 version = "3.4.0"
-source = "git+https://github.com/AstarNetwork/astar-frame?tag=pallet-dapps-staking-3.4.0/polkadot-v0.9.19#619ac820a2f7a13623a74e9ed9a4f3e238c32934"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.19#619ac820a2f7a13623a74e9ed9a4f3e238c32934"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
