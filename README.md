@@ -3,8 +3,8 @@
 Swanky node is the Substrate based blockchain configured to enable `pallet-contracts` and more features to help Wasm Smart Contract development.
 
 ## Features
-- pallet-contracts enabled
-- Instant seal and Manual seal is used for Consensus. No aura and grandpa.
+- pallet-contracts (polkadot-0.9.19) and its unstable-feature are enabled by default. ink version `3.0.0` is supported.
+- `grandpa` & `aura` consensus was removed. By default `instant-seal` is used - and `manual-seal` can also be used.
 - dApps staking
 
 ## Getting Started
@@ -20,7 +20,7 @@ First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
 Use Rust's native `cargo` command to build and launch the swanky node:
 
 ```sh
-cargo run --release -- --dev
+cargo run --release
 ```
 
 ### Build
@@ -52,19 +52,22 @@ node.
 This command will start the single-node development chain with non-persistent state:
 
 ```bash
-./target/release/swanky-node --dev
+./target/release/swanky-node
+
+# If you don't want to persist chain state, use tmp option.
+./target/release/swanky-node --tmp
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/swanky-node purge-chain --dev
+./target/release/swanky-node purge-chain
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_BACKTRACE=1 ./target/release/swanky-node -ldebug --dev
+RUST_BACKTRACE=1 ./target/release/swanky-node -ldebug
 ```
 
 > Development chain means that the state of our chain will be in a tmp folder while the nodes are
@@ -86,7 +89,7 @@ is ran. The following commands shows how to use a newly created folder as our db
 $ mkdir my-chain-state
 
 // Use of that folder to store the chain state
-$ ./target/release/swanky-node --dev --base-path ./my-chain-state/
+$ ./target/release/swanky-node --base-path ./my-chain-state/
 
 // Check the folder structure created inside the base path after running the chain
 $ ls ./my-chain-state
@@ -124,15 +127,15 @@ Then run the following command to start a single node development chain.
 
 This command will firstly compile your code, and then start a local development network. You can
 also replace the default command
-(`cargo build --release && ./target/release/swanky-node --dev --ws-external`)
+(`cargo build --release && ./target/release/swanky-node --ws-external`)
 by appending your own. A few useful ones are as follow.
 
 ```bash
 # Run Substrate node without re-compiling
-./scripts/docker_run.sh ./target/release/swanky-node --dev --ws-external
+./scripts/docker_run.sh ./target/release/swanky-node --ws-external
 
 # Purge the local dev chain
-./scripts/docker_run.sh ./target/release/swanky-node purge-chain --dev
+./scripts/docker_run.sh ./target/release/swanky-node purge-chain
 
 # Check whether the code is compilable
 ./scripts/docker_run.sh cargo check
@@ -148,7 +151,7 @@ By default, instant seal is used.
 
 ### Using Instant Seal
 ```bash
-./target/release/swanky-node --dev
+./target/release/swanky-node
 ```
 
 As soon as transaction gets pooled, blocks are instantly created.
@@ -156,7 +159,7 @@ As soon as transaction gets pooled, blocks are instantly created.
 
 ### Using Manual Seal
 ```bash
-./target/release/swanky-node --dev --manual-seal
+./target/release/swanky-node --manual-seal
 ```
 
 Once your node is running, you will see that it just sits there idly. It will accept transactions to the pool, but it will not author blocks on its own. In manual seal, the node does not author a block until we explicitly tell it to. We can tell it to author a block by calling the `engine_createBlock` RPC.
