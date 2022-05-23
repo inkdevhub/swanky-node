@@ -334,8 +334,8 @@ impl pallet_dapps_staking::traits::IsContract for SmartContract {
 	fn is_valid(&self) -> bool {
 		match self {
 			// temporarilly no AccountId validation.
-			// we want getter function here, so that we can check the existence of contract by AccountId.
-			// https://github.com/paritytech/substrate/blob/7a28c62246406839b746af2201309d0ed9a3f526/frame/contracts/src/lib.rs#L792
+			// we want getter function here, so that we can check the existence of contract by
+			// AccountId. https://github.com/paritytech/substrate/blob/7a28c62246406839b746af2201309d0ed9a3f526/frame/contracts/src/lib.rs#L792
 			SmartContract::Wasm(_account) => true,
 		}
 	}
