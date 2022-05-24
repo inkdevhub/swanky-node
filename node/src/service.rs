@@ -209,15 +209,15 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 			parent_hash: None,
 			sender: None,
 		});
-	// let commands_stream = stream::select(rpc_commands_stream, pool_import_commands_stream);
-	// let commands_stream = stream::select(rpc_commands_stream, pool_import_commands_stream);
+
+	let commands_stream = stream::select(rpc_commands_stream, pool_import_commands_stream);
 
 	let params = sc_consensus_manual_seal::ManualSealParams {
 		block_import: client.clone(),
 		env: proposer,
 		client,
 		pool: transaction_pool,
-		commands_stream: pool_import_commands_stream,
+		commands_stream,
 		select_chain,
 		consensus_data_provider: None,
 		create_inherent_data_providers: move |_, ()| async move {
