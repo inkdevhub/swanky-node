@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use codec::{Decode, Encode};
 use pallet_contracts::weights::WeightInfo;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -13,7 +14,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	AccountId32, ApplyExtrinsicResult, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -28,7 +29,7 @@ pub use frame_support::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
-	StorageValue,
+	PalletId, StorageValue,
 };
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
@@ -77,6 +78,8 @@ pub mod opaque {
 		pub struct SessionKeys {}
 	}
 }
+
+mod weights;
 
 // To learn more about runtime versioning and what each of the following value means:
 //   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
@@ -127,6 +130,15 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
+
+/// Constant values used within the runtime.
+pub const MILLIUNIT: Balance = 1_000_000_000_000_000;
+pub const UNIT: Balance = 1_000 * MILLIUNIT;
+
+/// Charge fee for stored bytes and items.
+pub const fn deposit(items: u32, bytes: u32) -> Balance {
+	(items as Balance + bytes as Balance) * MILLIUNIT / 1_000_000
+}
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -236,8 +248,8 @@ impl pallet_sudo::Config for Runtime {
 
 // contracts stuffs.
 parameter_types! {
-	pub const DepositPerItem: Balance = 0; // testing purpose chain. it's free.
-	pub const DepositPerByte: Balance = 0; // testing purpose chain. it's free.
+	pub const DepositPerItem: Balance = deposit(1, 0);
+	pub const DepositPerByte: Balance = deposit(0, 1);
 	// The lazy deletion runs inside on_initialize.
 	pub DeletionWeightLimit: Weight = AVERAGE_ON_INITIALIZE_RATIO *
 		BlockWeights::get().max_block;
@@ -275,6 +287,69 @@ impl pallet_contracts::Config for Runtime {
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 }
 
+parameter_types! {
+	pub const DappsStakingPalletId: PalletId = PalletId(*b"py/dpsst");
+	pub const BlockPerEra: BlockNumber = 60;
+	pub const RegisterDeposit: Balance = 100 * UNIT;
+	pub const MaxNumberOfStakersPerContract: u32 = 512;
+	pub const MinimumStakingAmount: Balance = 10 * UNIT;
+	pub const MinimumRemainingAmount: Balance = 1 * UNIT;
+	pub const MaxEraStakeValues: u32 = 5;
+	pub const MaxUnlockingChunks: u32 = 2;
+	pub const UnbondingPeriod: u32 = 2;
+}
+
+impl pallet_dapps_staking::Config for Runtime {
+	type Currency = Balances;
+	type BlockPerEra = BlockPerEra;
+	type SmartContract = SmartContract;
+	type RegisterDeposit = RegisterDeposit;
+	type Event = Event;
+	type WeightInfo = weights::pallet_dapps_staking::WeightInfo<Runtime>;
+	type MaxNumberOfStakersPerContract = MaxNumberOfStakersPerContract;
+	type MinimumStakingAmount = MinimumStakingAmount;
+	type PalletId = DappsStakingPalletId;
+	type MaxUnlockingChunks = MaxUnlockingChunks;
+	type UnbondingPeriod = UnbondingPeriod;
+	type MinimumRemainingAmount = MinimumRemainingAmount;
+	type MaxEraStakeValues = MaxEraStakeValues;
+}
+
+const DEFAULT_ACCOUNT: AccountId = AccountId32::new([0; 32]);
+
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
+pub enum SmartContract {
+	/// Wasm smart contract instance.
+	Wasm(AccountId),
+}
+
+impl Default for SmartContract {
+	fn default() -> Self {
+		SmartContract::Wasm(DEFAULT_ACCOUNT)
+	}
+}
+
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl pallet_dapps_staking::traits::IsContract for SmartContract {
+	fn is_valid(&self) -> bool {
+		match self {
+			// temporarilly no AccountId validation.
+			// we want getter function here, so that we can check the existence of contract by
+			// AccountId. https://github.com/paritytech/substrate/blob/7a28c62246406839b746af2201309d0ed9a3f526/frame/contracts/src/lib.rs#L792
+			SmartContract::Wasm(_account) => true,
+		}
+	}
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_dapps_staking::traits::IsContract for SmartContract {
+	fn is_valid(&self) -> bool {
+		match self {
+			SmartContract::Wasm(_account) => true,
+		}
+	}
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -288,8 +363,8 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-		// Smart Contracts.
 		Contracts: pallet_contracts,
+		DappsStaking: pallet_dapps_staking,
 	}
 );
 

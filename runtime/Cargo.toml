@@ -37,9 +37,12 @@ sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "
 sp-version = { version = "5.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
 
 # Contracts specific packages
-pallet-contracts = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19"}
+pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
 pallet-contracts-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
+
+# dApps staking
+pallet-dapps-staking = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.19", default-features = false }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
@@ -70,6 +73,7 @@ std = [
 	"pallet-contracts-primitives/std",
 	"pallet-contracts-rpc-runtime-api/std",
 	"pallet-contracts/std",
+	"pallet-dapps-staking/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
@@ -96,6 +100,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"hex-literal",
 	"pallet-balances/runtime-benchmarks",
+	"pallet-dapps-staking/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -105,6 +110,7 @@ try-runtime = [
 	"frame-system/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-randomness-collective-flip/try-runtime",
+	"pallet-dapps-staking/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
