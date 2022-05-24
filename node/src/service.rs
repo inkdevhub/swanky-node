@@ -6,9 +6,9 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
+use sc_transaction_pool_api::TransactionPool;
 use std::sync::Arc;
 use swanky_runtime::{self, opaque::Block, RuntimeApi};
-use sc_transaction_pool_api::TransactionPool;
 // Our native executor instance.
 pub struct ExecutorDispatch;
 
@@ -201,13 +201,14 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		telemetry.as_ref().map(|x| x.handle()),
 	);
 
-	let pool_import_commands_stream = transaction_pool
-		.clone()
-		.import_notification_stream().map(|_| sc_consensus_manual_seal::EngineCommand::SealNewBlock {
-			create_empty: false,
-			finalize: false,
-			parent_hash: None,
-			sender: None,
+	let pool_import_commands_stream =
+		transaction_pool.clone().import_notification_stream().map(|_| {
+			sc_consensus_manual_seal::EngineCommand::SealNewBlock {
+				create_empty: false,
+				finalize: false,
+				parent_hash: None,
+				sender: None,
+			}
 		});
 
 	let commands_stream = stream::select(rpc_commands_stream, pool_import_commands_stream);
