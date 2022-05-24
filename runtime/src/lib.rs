@@ -289,7 +289,7 @@ impl pallet_contracts::Config for Runtime {
 
 parameter_types! {
 	pub const DappsStakingPalletId: PalletId = PalletId(*b"py/dpsst");
-	pub const BlockPerEra: BlockNumber = 4 * HOURS;
+	pub const BlockPerEra: BlockNumber = 60;
 	pub const RegisterDeposit: Balance = 100 * UNIT;
 	pub const MaxNumberOfStakersPerContract: u32 = 2048;
 	pub const MinimumStakingAmount: Balance = 5 * UNIT;
