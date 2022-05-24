@@ -4,7 +4,7 @@ Swanky node is the Substrate based blockchain configured to enable `pallet-contr
 
 ## Features
 - pallet-contracts (polkadot-0.9.19) and its unstable-feature are enabled by default. ink version `3.0.0` is supported.
-- `grandpa` & `aura` consensus was removed. By default `instant-seal` is used - and `manual-seal` can also be used.
+- `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
 - dApps staking
 
 ## Getting Started
@@ -147,22 +147,13 @@ Unlike other blockchains, Swanky node adopts block authioring and finalized gadg
 Manual seal: Where there is one author and it authors a block whenever you tell it via an RPC call.
 Instant seal: Where there is one author and it attempts to author a block as soon as it sees a transaction in the pool, most often leading to one transaction per block
 
-By default, instant seal is used.
+Manual seal & Instant seal are enabled.
+That means, blocks are authored
+1) as soon as tx gets inside the pool
+2) when rpc method is called
 
-### Using Instant Seal
-```bash
-./target/release/swanky-node
-```
-
-As soon as transaction gets pooled, blocks are instantly created.
-
-
-### Using Manual Seal
-```bash
-./target/release/swanky-node --manual-seal
-```
-
-Once your node is running, you will see that it just sits there idly. It will accept transactions to the pool, but it will not author blocks on its own. In manual seal, the node does not author a block until we explicitly tell it to. We can tell it to author a block by calling the `engine_createBlock` RPC.
+### Manual Seal RPC calls
+We can tell the node to author a block by calling the `engine_createBlock` RPC.
 
 ```bash
 $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{

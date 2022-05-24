@@ -1,9 +1,12 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
+use futures::prelude::*;
+
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
+use sc_transaction_pool_api::TransactionPool;
 use std::sync::Arc;
 use swanky_runtime::{self, opaque::Block, RuntimeApi};
 // Our native executor instance.
@@ -115,7 +118,7 @@ fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(config: Configuration, manual_seal: bool) -> Result<TaskManager, ServiceError> {
+pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -159,7 +162,7 @@ pub fn new_full(config: Configuration, manual_seal: bool) -> Result<TaskManager,
 	}
 
 	let prometheus_registry = config.prometheus_registry().cloned();
-	let (command_sink, commands_stream) = futures::channel::mpsc::channel(1000);
+	let (rpc_command_sink, rpc_commands_stream) = futures::channel::mpsc::channel(1000);
 
 	let rpc_extensions_builder = {
 		let client = client.clone();
@@ -170,8 +173,7 @@ pub fn new_full(config: Configuration, manual_seal: bool) -> Result<TaskManager,
 				client: client.clone(),
 				pool: pool.clone(),
 				deny_unsafe,
-				manual_seal,
-				command_sink: command_sink.clone(),
+				command_sink: rpc_command_sink.clone(),
 			};
 
 			Ok(crate::rpc::create_full(deps))
@@ -199,43 +201,36 @@ pub fn new_full(config: Configuration, manual_seal: bool) -> Result<TaskManager,
 		telemetry.as_ref().map(|x| x.handle()),
 	);
 
-	if manual_seal {
-		let params = sc_consensus_manual_seal::ManualSealParams {
-			block_import: client.clone(),
-			env: proposer,
-			client,
-			pool: transaction_pool,
-			commands_stream,
-			select_chain,
-			consensus_data_provider: None,
-			create_inherent_data_providers: move |_, ()| async move {
-				Ok(sp_timestamp::InherentDataProvider::from_system_time())
-			},
-		};
-		task_manager.spawn_essential_handle().spawn_blocking(
-			"manual-seal",
-			None,
-			sc_consensus_manual_seal::run_manual_seal(params),
-		);
-	} else {
-		let params = sc_consensus_manual_seal::InstantSealParams {
-			block_import: client.clone(),
-			env: proposer,
-			client,
-			pool: transaction_pool,
-			select_chain,
-			consensus_data_provider: None,
-			create_inherent_data_providers: move |_, ()| async move {
-				Ok(sp_timestamp::InherentDataProvider::from_system_time())
-			},
-		};
+	let pool_import_commands_stream =
+		transaction_pool.clone().import_notification_stream().map(|_| {
+			sc_consensus_manual_seal::EngineCommand::SealNewBlock {
+				create_empty: false,
+				finalize: false,
+				parent_hash: None,
+				sender: None,
+			}
+		});
 
-		task_manager.spawn_essential_handle().spawn_blocking(
-			"instant-seal",
-			None,
-			sc_consensus_manual_seal::run_instant_seal(params),
-		);
+	let commands_stream = stream::select(rpc_commands_stream, pool_import_commands_stream);
+
+	let params = sc_consensus_manual_seal::ManualSealParams {
+		block_import: client.clone(),
+		env: proposer,
+		client,
+		pool: transaction_pool,
+		commands_stream,
+		select_chain,
+		consensus_data_provider: None,
+		create_inherent_data_providers: move |_, ()| async move {
+			Ok(sp_timestamp::InherentDataProvider::from_system_time())
+		},
 	};
+
+	task_manager.spawn_essential_handle().spawn_blocking(
+		"instant-and-manual-seal",
+		None,
+		sc_consensus_manual_seal::run_manual_seal(params),
+	);
 
 	network_starter.start_network();
 	Ok(task_manager)
