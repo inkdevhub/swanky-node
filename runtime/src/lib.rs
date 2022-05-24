@@ -291,11 +291,11 @@ parameter_types! {
 	pub const DappsStakingPalletId: PalletId = PalletId(*b"py/dpsst");
 	pub const BlockPerEra: BlockNumber = 60;
 	pub const RegisterDeposit: Balance = 100 * UNIT;
-	pub const MaxNumberOfStakersPerContract: u32 = 2048;
-	pub const MinimumStakingAmount: Balance = 5 * UNIT;
+	pub const MaxNumberOfStakersPerContract: u32 = 512;
+	pub const MinimumStakingAmount: Balance = 10 * UNIT;
 	pub const MinimumRemainingAmount: Balance = 1 * UNIT;
 	pub const MaxEraStakeValues: u32 = 5;
-	pub const MaxUnlockingChunks: u32 = 32;
+	pub const MaxUnlockingChunks: u32 = 2;
 	pub const UnbondingPeriod: u32 = 2;
 }
 
