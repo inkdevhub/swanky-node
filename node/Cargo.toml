@@ -1,6 +1,6 @@
 [package]
 name = "swanky-node"
-version = "4.0.0-dev"
+version = "0.4.0"
 description = "Local Substrate node for wasm contract development & testing"
 authors = ["Astar Network"]
 homepage = "https://astar.network"
