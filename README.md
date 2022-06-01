@@ -7,7 +7,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called.
   Blocks are finalized when `engine_finalizeBlock` RPC called.
-- dApps staking and ChainExtension to interact with it.
+- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.19/frame/dapps-staking) and ChainExtension to interact with it.
 
 It is optimized to local development purpose while removing unnecessary components such as P2P.
 More features and pallets to interact with (Contract <-> Runtime) will be added.
@@ -53,7 +53,7 @@ This command will start the single-node development chain with persistent state.
 ```bash
 ./target/release/swanky-node
 ```
-If you want to run node with non-persist chain state mode, use tmp option.
+If you want to run the node with non-persist mode, use tmp option.
 ```
 ./target/release/swanky-node --tmp
 # or
@@ -86,7 +86,7 @@ To have only errors and contract debug output show up on the console you can sup
 
 Important: Debug output is only printed for RPC calls or off-chain tests ‒ not for transactions.
 
-See ink! FAQ for more details: How do I print something to the console from the runtime?.
+See ink! [FAQ](https://ink.substrate.io/faq/#how-do-i-print-something-to-the-console-from-the-runtime) for more details: How do I print something to the console from the runtime?.
 
 ### Connect with Polkadot-JS Apps Front-end
 
