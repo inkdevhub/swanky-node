@@ -22,8 +22,6 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
-use frame_support::log::{error, trace};
-use frame_support::pallet_prelude::MaxEncodedLen;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
@@ -32,6 +30,10 @@ pub use frame_support::{
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
+};
+use frame_support::{
+	log::{error, trace},
+	pallet_prelude::MaxEncodedLen,
 };
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
