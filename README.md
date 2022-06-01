@@ -3,7 +3,7 @@
 Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- pallet-contracts (polkadot-0.9.19) and its unstable-feature are enabled by default.
+- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.19) and its unstable-feature are enabled by default.
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called.
   Blocks are finalized when `engine_finalizeBlock` RPC called.
