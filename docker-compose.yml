@@ -3,7 +3,7 @@ version: "3.2"
 services:
   dev:
     container_name: swanky-node
-    image: paritytech/ci-linux:974ba3ac-20201006
+    image: paritytech/ci-linux:eb1f6a26-20220517
     working_dir: /var/www/swanky-node
     ports:
       - "9944:9944"

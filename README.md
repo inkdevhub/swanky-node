@@ -1,118 +1,99 @@
-# Swanky Node
+# Swanky Node :sunglasses:
 
-Swanky node is the Substrate based blockchain configured to enable `pallet-contracts` and more features to help Wasm Smart Contract development.
+Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- pallet-contracts (polkadot-0.9.19) and its unstable-feature are enabled by default. ink version `3.0.0` is supported.
+- pallet-contracts (polkadot-0.9.19) and its unstable-feature are enabled by default.
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
-- dApps staking
+  Blocks are authored (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called.
+  Blocks are finalized when `engine_finalizeBlock` RPC called.
+- dApps staking and ChainExtension to interact with it.
 
-## Getting Started
+It is optimized to local development purpose while removing unnecessary components such as P2P.
+More features and pallets to interact with (Contract <-> Runtime) will be added.
 
-Follow the steps below to get started with the swanky node :hammer_and_wrench:
-
-### Rust Setup
-
-First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
-
-### Run
-
-Use Rust's native `cargo` command to build and launch the swanky node:
-
-```sh
-cargo run --release
+## Compatible ink! version
+ink version `3.0.1` or lower is supported by pallet-contract polkadot-0.9.19 branch.
+You may need to modify dependencies as show below.
+```
+[dependencies]
+ink_primitives = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
+ink_metadata = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false, features = ["derive"], optional = true }
+ink_env = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
+ink_storage = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
+ink_lang = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
+ink_prelude = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
+​
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
 ```
 
-### Build
+## Installation
+### Download Binary
+The easiest way is to download a binary release from [Release Page](https://github.com/AstarNetwork/swanky-node/releases)
 
-The `cargo run` command will perform an initial build. Use the following command to build the node
-without launching it:
-
-```sh
+### Build Locally
+First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
+After that, you can build node via
+```bash
 cargo build --release
 ```
 
-### Embedded Docs
+### Embedded Docs :book:
 
 Once the project has been built, the following command can be used to explore all parameters and
 subcommands:
 
-```sh
+```bash
 ./target/release/swanky-node -h
 ```
 
-## Run
-
-The provided `cargo run` command will launch a temporary node and its state will be discarded after
-you terminate the process. After the project has been built, there are other ways to launch the
-node.
-
-### Single-Node Development Chain
-
-This command will start the single-node development chain with non-persistent state:
-
+## Usage
+This command will start the single-node development chain with persistent state.
 ```bash
 ./target/release/swanky-node
-
-# If you don't want to persist chain state, use tmp option.
+```
+If you want to run node with non-persist chain state mode, use tmp option.
+```
 ./target/release/swanky-node --tmp
+# or
+./target/release/swanky-node --dev
 ```
 
-Purge the development chain's state:
-
+Purge the development chain's state.
 ```bash
 ./target/release/swanky-node purge-chain
 ```
 
-Start the development chain with detailed logging:
-
-```bash
-RUST_BACKTRACE=1 ./target/release/swanky-node -ldebug
-```
-
-> Development chain means that the state of our chain will be in a tmp folder while the nodes are
-> running. Also, **alice** account will be authority and sudo account as declared in the
-> [genesis state](https://github.com/substrate-developer-hub/substrate-swanky-node/blob/main/node/src/chain_spec.rs#L49).
+> Development **alice** account will be authority and sudo account as declared in the
+> [genesis state](https://github.com/AstarNetwork/swanky-node/blob/main/node/src/chain_spec.rs#L44).
 > At the same time the following accounts will be pre-funded:
 > - Alice
 > - Bob
+> - Charlie
+> - Dave
+> - Eve
+> - Ferdie
 > - Alice//stash
 > - Bob//stash
-
-In case of being interested in maintaining the chain' state between runs a base path must be added
-so the db can be stored in the provided folder instead of a temporal one. We could use this folder
-to store different chain databases, as a different folder will be created per different chain that
-is ran. The following commands shows how to use a newly created folder as our db base path.
-
-```bash
-// Create a folder to use as the db base path
-$ mkdir my-chain-state
-
-// Use of that folder to store the chain state
-$ ./target/release/swanky-node --base-path ./my-chain-state/
-
-// Check the folder structure created inside the base path after running the chain
-$ ls ./my-chain-state
-chains
-$ ls ./my-chain-state/chains/
-dev
-$ ls ./my-chain-state/chains/dev
-db keystore network
-```
+> - Charlie//stash
+> - Dave//stash
+> - Eve//stash
+> - Ferdie//stash
 
 ### Show only Errors and Contract Debug Output
 To have only errors and contract debug output show up on the console you can supply `-lerror,runtime::contracts=debug` when starting the node.
 
-Important: Debug output is only printed for RPC calls or off-chain tests ‒ not for transactions!
+Important: Debug output is only printed for RPC calls or off-chain tests ‒ not for transactions.
 
-See our FAQ for more details: How do I print something to the console from the runtime?.
+See ink! FAQ for more details: How do I print something to the console from the runtime?.
 
 ### Connect with Polkadot-JS Apps Front-end
 
 Once the swanky node is running locally, you can connect it with **Polkadot-JS Apps** front-end
 to interact with your chain. [Click
 here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connecting the Apps to your
-local swanky.
+local swanky node.
 
 ### Run in Docker
 
@@ -122,12 +103,13 @@ First, install [Docker](https://docs.docker.com/get-docker/) and
 Then run the following command to start a single node development chain.
 
 ```bash
+mkdir .local # this is mounted by container
 ./scripts/docker_run.sh
 ```
 
 This command will firstly compile your code, and then start a local development network. You can
 also replace the default command
-(`cargo build --release && ./target/release/swanky-node --ws-external`)
+(`cargo build --release && ./target/release/swanky-node --dev --ws-external`)
 by appending your own. A few useful ones are as follow.
 
 ```bash
@@ -142,15 +124,12 @@ by appending your own. A few useful ones are as follow.
 ```
 
 ## Consensus (Manual Seal & Instant Seal)
-Unlike other blockchains, Swanky node adopts block authioring and finalized gadget called Manual (& Instant) Seal, consensus which is suitable for contract development and testing.
+Unlike other blockchains, Swanky node adopts block authioring and finalized gadget called Manual Seal and Instant Seal, consensus which is suitable for contracts development and testing.
 
-Manual seal: Where there is one author and it authors a block whenever you tell it via an RPC call.
-Instant seal: Where there is one author and it attempts to author a block as soon as it sees a transaction in the pool, most often leading to one transaction per block
+Manual seal - Blocks are authored whenever RPC called.
+Instant seal - Block are authored as soon as transactions get inside the pool, most often one transaction per block.
 
-Manual seal & Instant seal are enabled.
-That means, blocks are authored
-1) as soon as tx gets inside the pool
-2) when rpc method is called
+Swanky node enables both Manual seal and Instant seal.
 
 ### Manual Seal RPC calls
 We can tell the node to author a block by calling the `engine_createBlock` RPC.
@@ -169,7 +148,7 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 `create_empty` is a Boolean value indicating whether empty blocks may be created. Setting `create-empty` to true does not mean that an empty block will necessarily be created. Rather it means that the engine should go ahead creating a block even if no transaction are present. If transactions are present in the queue, they will be included regardless of `create_empty`'s value.'
 
 - **Finalize**
-`finalize` is a Boolean indicating whether the block (and its ancestors, recursively) should be finalized after creation. Manually controlling finality is interesting, but also dangerous. If you attempt to author and finalize a block that does not build on the best finalized chain, the block will not be imported. If you finalize one block in one node, and a conflicting block in another node, you will cause a safety violation when the nodes synchronize.
+`finalize` is a Boolean indicating whether the block (and its ancestors, recursively) should be finalized after creation.
 
 - **Parent Hash**
 `parent_hash` is an optional hash of a block to use as a parent. To set the parent, use the format `"0x0e0626477621754200486f323e3858cd5f28fcbe52c69b2581aecb622e384764"`. To omit the parent, use `null`. When the parent is omitted the block is built on the current best block. Manually specifying the parent is useful for constructing fork scenarios and demonstrating chain reorganizations.
