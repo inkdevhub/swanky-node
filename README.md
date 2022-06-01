@@ -14,7 +14,7 @@ More features and pallets to interact with (Contract <-> Runtime) will be added.
 
 ## Compatible ink! version
 ink version `3.0.1` or lower is supported by pallet-contract polkadot-0.9.19 branch.
-You may need to modify dependencies as show below.
+You may need to modify dependencies as shown below.
 ```
 [dependencies]
 ink_primitives = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
