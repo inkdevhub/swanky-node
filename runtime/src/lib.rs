@@ -19,7 +19,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	AccountId32, DispatchError, ApplyExtrinsicResult, MultiSignature, RuntimeDebug,
+	AccountId32, ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -27,18 +27,19 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
+use frame_support::dispatch::DispatchErrorWithPostInfo;
 pub use frame_support::{
-	construct_runtime, parameter_types,
-	log::{error, trace, debug},
+	construct_runtime,
+	log::{debug, error, trace},
+	pallet_prelude::MaxEncodedLen,
+	parameter_types,
 	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
-	pallet_prelude::MaxEncodedLen,
 };
-use frame_support::dispatch::DispatchErrorWithPostInfo;
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -378,7 +379,6 @@ impl pallet_dapps_staking::traits::IsContract for SmartContract {
 	}
 }
 
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen)]
 pub struct BondStakeInput<AccountId, Balance> {
 	account_id: AccountId,
@@ -390,8 +390,8 @@ pub struct LocalChainExtension;
 
 impl ChainExtension<Runtime> for LocalChainExtension {
 	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-		where
-			<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	where
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
 		match func_id {
 			// 20 is dapps_staking prefix and 01 is function number
@@ -401,15 +401,15 @@ impl ChainExtension<Runtime> for LocalChainExtension {
 				let current_era = crate::DappsStaking::current_era();
 				let current_era_encoded = current_era.encode();
 				trace!(
-                    target: "runtime",
-                    "[ChainExtension]|call|func_id:{:} current_era:{:?}",
-                    func_id,
-                    &current_era_encoded
-                );
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} current_era:{:?}",
+					func_id,
+					&current_era_encoded
+				);
 				env.write(&current_era_encoded, false, None).map_err(|_| {
 					DispatchError::Other("ChainExtension failed to call current_era")
 				})?;
-			}
+			},
 
 			// dapps_staking - general_era_info()
 			2002 => {
@@ -421,49 +421,53 @@ impl ChainExtension<Runtime> for LocalChainExtension {
 				let era_info_encoded = era_info.encode();
 				sp_std::if_std! {println!("era_info_encoded:{:?}", era_info_encoded)};
 				trace!(
-                    target: "runtime",
-                    "[ChainExtension]|call|func_id:{:} era_info_encoded:{:?}, arg:{:?}",
-                    func_id,
-                    era_info_encoded,
-                    arg
-                );
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} era_info_encoded:{:?}, arg:{:?}",
+					func_id,
+					era_info_encoded,
+					arg
+				);
 				env.write(&era_info_encoded, false, None).map_err(|_| {
 					DispatchError::Other("ChainExtension failed to call general_era_info")
 				})?;
-			}
+			},
 
 			// dapps_staking - bond_and_stake()
 			2003 => {
 				let mut env = env.buf_in_buf_out();
 				let args: BondStakeInput<AccountId, Balance> = env.read_as()?;
 				debug!(
-                    target: "runtime",
-                    "[ChainExtension]|call|func_id:{:} arg:{:?}",
-                    func_id,
-                    args,
-                );
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} arg:{:?}",
+					func_id,
+					args,
+				);
 
 				let caller = AccountId::decode(&mut env.ext().caller().as_ref()).unwrap();
 				let contract = AccountId::decode(&mut args.account_id.as_ref()).unwrap();
 				let smart_contract = SmartContract::Wasm(contract);
 
-				let result = DappsStaking::bond_and_stake(Origin::signed(caller), smart_contract, args.value);
+				let result = DappsStaking::bond_and_stake(
+					Origin::signed(caller),
+					smart_contract,
+					args.value,
+				);
 
-				result.map_err(|err: DispatchErrorWithPostInfo | {
+				result.map_err(|err: DispatchErrorWithPostInfo| {
 					debug!(
-                    target: "runtime",
-                    "[ChainExtension]|call|func_id:{:} Error:{:#?}",
-                    func_id,
-                    err.error,
-                );
+						target: "runtime",
+						"[ChainExtension]|call|func_id:{:} Error:{:#?}",
+						func_id,
+						err.error,
+					);
 					DispatchError::Other("ChainExtension failed to call bondAndStake")
 				})?;
-			}
+			},
 
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
-				return Err(DispatchError::Other("Unimplemented func_id"));
-			}
+				return Err(DispatchError::Other("Unimplemented func_id"))
+			},
 		}
 		Ok(RetVal::Converging(0))
 	}
