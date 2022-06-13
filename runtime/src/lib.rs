@@ -102,7 +102,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 100,
+	spec_version: 2,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -394,9 +394,9 @@ impl ChainExtension<Runtime> for LocalChainExtension {
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
 		match func_id {
-			// 20 is dapps_staking prefix and 01 is function number
+			// dapps_staking pallet number is 34 and 01 is function number
 			// dapps_staking - current_era()
-			2001 => {
+			3401 => {
 				let mut env = env.buf_in_buf_out();
 				let current_era = crate::DappsStaking::current_era();
 				let current_era_encoded = current_era.encode();
@@ -412,7 +412,7 @@ impl ChainExtension<Runtime> for LocalChainExtension {
 			},
 
 			// dapps_staking - general_era_info()
-			2002 => {
+			3402 => {
 				let mut env = env.buf_in_buf_out();
 				let arg: u32 = env.read_as()?;
 				let era_info = DappsStaking::general_era_info(arg)
@@ -433,7 +433,7 @@ impl ChainExtension<Runtime> for LocalChainExtension {
 			},
 
 			// dapps_staking - bond_and_stake()
-			2003 => {
+			3403 => {
 				let mut env = env.buf_in_buf_out();
 				let args: BondStakeInput<AccountId, Balance> = env.read_as()?;
 				debug!(
