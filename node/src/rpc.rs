@@ -8,14 +8,13 @@
 use std::sync::Arc;
 
 use futures::channel::mpsc::Sender;
-use swanky_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index};
 use jsonrpsee::RpcModule;
+use swanky_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index};
 
 use sc_consensus_manual_seal::{
-	rpc::ManualSeal,
+	rpc::{ManualSeal, ManualSealApiServer},
 	EngineCommand,
 };
-use sc_consensus_manual_seal::rpc::ManualSealApiServer;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
