@@ -7,14 +7,19 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode};
-use pallet_contracts::weights::WeightInfo;
+use pallet_contracts::{
+	chain_extension::{
+		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+	},
+	weights::WeightInfo,
+};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	AccountId32, ApplyExtrinsicResult, MultiSignature, RuntimeDebug,
+	AccountId32, ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -22,8 +27,12 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
+use frame_support::dispatch::DispatchErrorWithPostInfo;
 pub use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime,
+	log::{debug, error, trace},
+	pallet_prelude::MaxEncodedLen,
+	parameter_types,
 	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -93,7 +102,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 100,
+	spec_version: 2,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -299,7 +308,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = ();
+	type ChainExtension = LocalChainExtension;
 	type DeletionQueueDepth = DeletionQueueDepth;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -367,6 +376,104 @@ impl pallet_dapps_staking::traits::IsContract for SmartContract {
 		match self {
 			SmartContract::Wasm(_account) => true,
 		}
+	}
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen)]
+pub struct BondStakeInput<AccountId, Balance> {
+	account_id: AccountId,
+	value: Balance,
+}
+
+/// Contract extension for Local Chain-Extension
+pub struct LocalChainExtension;
+
+impl ChainExtension<Runtime> for LocalChainExtension {
+	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		match func_id {
+			// dapps_staking pallet number is 34 and 01 is function number
+			// dapps_staking - current_era()
+			3401 => {
+				let mut env = env.buf_in_buf_out();
+				let current_era = crate::DappsStaking::current_era();
+				let current_era_encoded = current_era.encode();
+				trace!(
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} current_era:{:?}",
+					func_id,
+					&current_era_encoded
+				);
+				env.write(&current_era_encoded, false, None).map_err(|_| {
+					DispatchError::Other("ChainExtension failed to call current_era")
+				})?;
+			},
+
+			// dapps_staking - general_era_info()
+			3402 => {
+				let mut env = env.buf_in_buf_out();
+				let arg: u32 = env.read_as()?;
+				let era_info = DappsStaking::general_era_info(arg)
+					.ok_or(DispatchError::Other("general_era_info call failed"));
+				sp_std::if_std! {println!("era_info:{:?}", era_info)};
+				let era_info_encoded = era_info.encode();
+				sp_std::if_std! {println!("era_info_encoded:{:?}", era_info_encoded)};
+				trace!(
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} era_info_encoded:{:?}, arg:{:?}",
+					func_id,
+					era_info_encoded,
+					arg
+				);
+				env.write(&era_info_encoded, false, None).map_err(|_| {
+					DispatchError::Other("ChainExtension failed to call general_era_info")
+				})?;
+			},
+
+			// dapps_staking - bond_and_stake()
+			3403 => {
+				let mut env = env.buf_in_buf_out();
+				let args: BondStakeInput<AccountId, Balance> = env.read_as()?;
+				debug!(
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:} arg:{:?}",
+					func_id,
+					args,
+				);
+
+				let caller = AccountId::decode(&mut env.ext().caller().as_ref()).unwrap();
+				let contract = AccountId::decode(&mut args.account_id.as_ref()).unwrap();
+				let smart_contract = SmartContract::Wasm(contract);
+
+				let result = DappsStaking::bond_and_stake(
+					Origin::signed(caller),
+					smart_contract,
+					args.value,
+				);
+
+				result.map_err(|err: DispatchErrorWithPostInfo| {
+					debug!(
+						target: "runtime",
+						"[ChainExtension]|call|func_id:{:} Error:{:#?}",
+						func_id,
+						err.error,
+					);
+					DispatchError::Other("ChainExtension failed to call bondAndStake")
+				})?;
+			},
+
+			_ => {
+				error!("Called an unregistered `func_id`: {:}", func_id);
+				return Err(DispatchError::Other("Unimplemented func_id"))
+			},
+		}
+		Ok(RetVal::Converging(0))
+	}
+
+	fn enabled() -> bool {
+		true
 	}
 }
 
