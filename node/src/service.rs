@@ -175,8 +175,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 				deny_unsafe,
 				command_sink: rpc_command_sink.clone(),
 			};
-
-			Ok(crate::rpc::create_full(deps))
+			crate::rpc::create_full(deps).map_err(Into::into)
 		})
 	};
 
@@ -186,7 +185,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		keystore: keystore_container.sync_keystore(),
 		task_manager: &mut task_manager,
 		transaction_pool: transaction_pool.clone(),
-		rpc_extensions_builder,
+		rpc_builder: rpc_extensions_builder,
 		backend,
 		system_rpc_tx,
 		config,

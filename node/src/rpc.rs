@@ -8,11 +8,11 @@
 use std::sync::Arc;
 
 use futures::channel::mpsc::Sender;
-use pallet_contracts_rpc::{Contracts, ContractsApi};
+use jsonrpsee::RpcModule;
 use swanky_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index};
 
 use sc_consensus_manual_seal::{
-	rpc::{ManualSeal, ManualSealApi},
+	rpc::{ManualSeal, ManualSealApiServer},
 	EngineCommand,
 };
 pub use sc_rpc_api::DenyUnsafe;
@@ -34,7 +34,9 @@ pub struct FullDeps<C, P> {
 }
 
 /// Instantiate all full RPC extensions.
-pub fn create_full<C, P>(deps: FullDeps<C, P>) -> jsonrpc_core::IoHandler<sc_rpc::Metadata>
+pub fn create_full<C, P>(
+	deps: FullDeps<C, P>,
+) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>,
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
@@ -45,29 +47,20 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + 'static,
 {
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-	use substrate_frame_rpc_system::{FullSystem, SystemApi};
+	use pallet_contracts_rpc::{Contracts, ContractsApiServer};
+	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use substrate_frame_rpc_system::{System, SystemApiServer};
 
-	let mut io = jsonrpc_core::IoHandler::default();
+	let mut io = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe, command_sink } = deps;
 
-	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
+	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
-	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
-
-	io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
-
-	// Extend this RPC with a custom API by using the following syntax.
-	// `YourRpcStruct` should have a reference to a client, which is needed
-	// to call into the runtime.
-	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
+	io.merge(Contracts::new(client.clone()).into_rpc())?;
 
 	// The final RPC extension receives commands for the manual seal consensus engine.
-	io.extend_with(
-		// We provide the rpc handler with the sending end of the channel to allow the rpc
-		// send EngineCommands to the background block authorship task.
-		ManualSealApi::to_delegate(ManualSeal::new(command_sink)),
-	);
+	io.merge(ManualSeal::new(command_sink).into_rpc())?;
 
-	io
+	Ok(io)
 }

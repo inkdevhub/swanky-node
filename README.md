@@ -3,7 +3,7 @@
 Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.19) and its unstable-feature are enabled by default.
+- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.24) and its unstable-feature are enabled by default.
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called.
   Blocks are finalized when `engine_finalizeBlock` RPC called.
@@ -14,20 +14,7 @@ It is optimized to local development purpose while removing unnecessary componen
 More features and pallets to interact with (Contract <-> Runtime) will be added.
 
 ## Compatible ink! version
-ink! version `3.0.1` or lower is supported by pallet-contract polkadot-0.9.19 branch.
-You may need to modify dependencies as shown below.
-```
-[dependencies]
-ink_primitives = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
-ink_metadata = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false, features = ["derive"], optional = true }
-ink_env = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
-ink_storage = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
-ink_lang = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
-ink_prelude = { tag = "v3.0.1", git = "https://github.com/paritytech/ink", default-features = false }
-​
-scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
-scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
-```
+ink! version `3.2.0` or lower is supported by pallet-contract polkadot-0.9.24 branch.
 
 ## Installation
 ### Download Binary
