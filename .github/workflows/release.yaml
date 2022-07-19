@@ -65,10 +65,10 @@ jobs:
     - name: Build optimized binary
       run: cargo build --release --verbose
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@master
       with:
-        name: astar-ubuntu-latest-x86_64
-        path: target/release/astar-collator
+        name: swanky-node-ubuntu-latest-x86_64
+        path: target/release/swanky-node
 
   native-macos:
     needs: checks-and-tests
@@ -94,13 +94,14 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
           ${{ runner.os }}-cargo-
+
     - name: Build optimized binary
       run: cargo build --release --verbose
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@master
       with:
-        name: astar-macOS-latest-x86_64
-        path: target/release/astar-collator
+        name: swanky-node-macOS-latest-x86_64
+        path: target/release/swanky-node
 
   publish-release-draft:
     needs: [native-linux, native-macOS]
@@ -138,14 +139,14 @@ jobs:
     - name: Download pre-built collator binary
       uses: actions/download-artifact@v3
       with:
-        name: astar-${{ matrix.os }}-latest-x86_64
+        name: swanky-node-macOS-${{ matrix.os }}-latest-x86_64
         path: ${{ matrix.os }}-bin
 
     - name: Make binary executable and tar gzip
       run: |
         cd ${{ matrix.os }}-bin
-        chmod +x astar-collator
-        tar zcvf astar-collator.tar.gz astar-collator
+        chmod +x swanky-node
+        tar zcvf swanky-node.tar.gz swanky-node
 
     - name: Upload binary artifact
       uses: actions/upload-release-asset@v1
@@ -153,6 +154,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.publish-release-draft.outputs.upload_url }}
-        asset_path: ${{ matrix.os }}-bin/astar-collator.tar.gz
-        asset_name: astar-collator-${{ github.ref_name }}-${{ matrix.os }}-x86_64.tar.gz
+        asset_path: ${{ matrix.os }}-bin/swanky-node.tar.gz
+        asset_name: swanky-node-${{ github.ref_name }}-${{ matrix.os }}-x86_64.tar.gz
         asset_content_type: application/gzip

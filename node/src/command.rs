@@ -165,3 +165,7 @@ pub fn run() -> sc_cli::Result<()> {
 		},
 	}
 }
+
+
+Support for polkadot-v0.9.24
+ink! version support v3.2.0
