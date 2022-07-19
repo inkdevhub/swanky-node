@@ -37,7 +37,8 @@ impl SubstrateCli for Cli {
 
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
 		Ok(match id {
-			"dev" | _ => Box::new(chain_spec::development_config()?),
+			"dev" => Box::new(chain_spec::development_config()?),
+			_ => Box::new(chain_spec::development_config()?),
 		})
 	}
 
