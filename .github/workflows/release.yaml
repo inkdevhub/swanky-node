@@ -1,0 +1,158 @@
+name: Release Build
+on:
+  push:
+    tags:
+    - v[0-9]+.[0-9]+.[0-9]+*
+  workflow_dispatch:
+env:
+  SUBWASM_VERSION: 0.16.1
+jobs:
+  checks-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the source code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install & display rust toolchain
+      run: rustup show
+
+    - name: Check targets are installed correctly
+      run: rustup target list --installed
+
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Check all features compilation
+      run: cargo check --verbose
+
+    - name: Run all tests
+      run: cargo test --verbose
+
+  native-linux:
+    needs: checks-and-tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the source code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install & display rust toolchain
+      run: rustup show
+
+    - name: Check targets are installed correctly
+      run: rustup target list --installed
+
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Build optimized binary
+      run: cargo build --release --verbose
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: astar-ubuntu-latest-x86_64
+        path: target/release/astar-collator
+
+  native-macos:
+    needs: checks-and-tests
+    runs-on: macos-latest
+    steps:
+    - name: Checkout the source code
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install & display rust toolchain
+      run: rustup show
+
+    - name: Check targets are installed correctly
+      run: rustup target list --installed
+
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    - name: Build optimized binary
+      run: cargo build --release --verbose
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: astar-macOS-latest-x86_64
+        path: target/release/astar-collator
+
+  publish-release-draft:
+    needs: [native-linux, native-macOS]
+    runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.create-release.outputs.html_url }}
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Create Release Draft
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: ${{ github.ref_name }}
+        body_path: .github/release-draft.md
+        draft: true
+
+  upload-binaries:
+    needs: publish-release-draft
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: ["ubuntu", "macOS"]
+    steps:
+    - name: Create download folder
+      run: |
+        mkdir -p ${{ matrix.os }}-bin
+
+    - name: Download pre-built collator binary
+      uses: actions/download-artifact@v3
+      with:
+        name: astar-${{ matrix.os }}-latest-x86_64
+        path: ${{ matrix.os }}-bin
+
+    - name: Make binary executable and tar gzip
+      run: |
+        cd ${{ matrix.os }}-bin
+        chmod +x astar-collator
+        tar zcvf astar-collator.tar.gz astar-collator
+
+    - name: Upload binary artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.publish-release-draft.outputs.upload_url }}
+        asset_path: ${{ matrix.os }}-bin/astar-collator.tar.gz
+        asset_name: astar-collator-${{ github.ref_name }}-${{ matrix.os }}-x86_64.tar.gz
+        asset_content_type: application/gzip
