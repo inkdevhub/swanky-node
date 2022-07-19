@@ -25,6 +25,7 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
           ${{ runner.os }}-cargo-
+
     - name: Check all features compilation
       run: cargo check --verbose
 
