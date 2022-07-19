@@ -21,16 +21,6 @@ jobs:
     - name: Check targets are installed correctly
       run: rustup target list --installed
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
-
     - name: Check all features compilation
       run: cargo check --verbose
 
@@ -51,16 +41,6 @@ jobs:
 
     - name: Check targets are installed correctly
       run: rustup target list --installed
-
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
 
     - name: Build optimized binary
       run: cargo build --release --verbose
@@ -84,16 +64,6 @@ jobs:
 
     - name: Check targets are installed correctly
       run: rustup target list --installed
-
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
 
     - name: Build optimized binary
       run: cargo build --release --verbose
@@ -139,7 +109,7 @@ jobs:
     - name: Download pre-built collator binary
       uses: actions/download-artifact@v3
       with:
-        name: swanky-node-macOS-${{ matrix.os }}-latest-x86_64
+        name: swanky-node-${{ matrix.os }}-latest-x86_64
         path: ${{ matrix.os }}-bin
 
     - name: Make binary executable and tar gzip

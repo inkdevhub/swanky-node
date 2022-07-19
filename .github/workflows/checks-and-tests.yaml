@@ -16,16 +16,6 @@ jobs:
     - name: Check targets are installed correctly
       run: rustup target list --installed
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
-
     - name: Check all features compilation
       run: cargo check --verbose
 
@@ -40,16 +30,6 @@ jobs:
 
     - name: Check targets are installed correctly
       run: rustup target list --installed
-
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
 
     - name: Run all tests
       run: cargo test --verbose
