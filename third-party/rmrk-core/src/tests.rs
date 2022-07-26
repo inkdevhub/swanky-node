@@ -438,7 +438,6 @@ fn royalty_recipient_default_works() {
 			None,
 		));
 		// Royalty recipient should be BOB
-		// BOOKMARK
 		assert_eq!(RmrkCore::nfts(0, 1).unwrap().royalty.unwrap().recipient, BOB);
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
