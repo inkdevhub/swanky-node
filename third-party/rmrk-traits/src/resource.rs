@@ -11,17 +11,11 @@ use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, result::Result, vec::Vec};
 
-use crate::{
-	primitives::*,
-	serialize,
-};
+use crate::{primitives::*, serialize};
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize))]
-#[cfg_attr(
-	feature = "std",
-	serde(bound = "BoundedString: AsRef<[u8]>")
-)]
+#[cfg_attr(feature = "std", serde(bound = "BoundedString: AsRef<[u8]>"))]
 pub struct BasicResource<BoundedString> {
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.
@@ -50,12 +44,10 @@ pub struct BasicResource<BoundedString> {
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			BoundedString: AsRef<[u8]>,
 			BoundedParts: AsRef<[PartId]>
-		"#
-	)
+		"#)
 )]
 pub struct ComposableResource<BoundedString, BoundedParts> {
 	/// If a resource is composed, it will have an array of parts that compose it
@@ -100,10 +92,7 @@ pub struct ComposableResource<BoundedString, BoundedParts> {
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize))]
-#[cfg_attr(
-	feature = "std",
-	serde(bound = "BoundedString: AsRef<[u8]>")
-)]
+#[cfg_attr(feature = "std", serde(bound = "BoundedString: AsRef<[u8]>"))]
 pub struct SlotResource<BoundedString> {
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
@@ -144,12 +133,10 @@ pub struct SlotResource<BoundedString> {
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			BoundedString: AsRef<[u8]>,
 			BoundedParts: AsRef<[PartId]>
-		"#
-	)
+		"#)
 )]
 pub enum ResourceTypes<BoundedString, BoundedParts> {
 	Basic(BasicResource<BoundedString>),
@@ -161,12 +148,10 @@ pub enum ResourceTypes<BoundedString, BoundedParts> {
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			BoundedString: AsRef<[u8]>,
 			BoundedParts: AsRef<[PartId]>
-		"#
-	)
+		"#)
 )]
 pub struct ResourceInfo<BoundedString, BoundedParts> {
 	/// id is a 5-character string of reasonable uniqueness.

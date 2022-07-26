@@ -16,8 +16,8 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
-	ComposableResource, Nft, NftInfo, NftChild, PhantomType, Priority, Property, PropertyInfo, Resource,
-	ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource, 
+	ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo,
+	Resource, ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -32,7 +32,7 @@ mod tests;
 pub type CollectionInfoOf<T> = CollectionInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<u8, <T as Config>::CollectionSymbolLimit>,
-	<T as frame_system::Config>::AccountId
+	<T as frame_system::Config>::AccountId,
 >;
 
 pub type InstanceInfoOf<T> = NftInfo<
@@ -40,9 +40,9 @@ pub type InstanceInfoOf<T> = NftInfo<
 	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceInfoOf<T> = ResourceInfo::<
+pub type ResourceInfoOf<T> = ResourceInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	BoundedVec<PartId, <T as Config>::PartsLimit>
+	BoundedVec<PartId, <T as Config>::PartsLimit>,
 >;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
@@ -63,10 +63,7 @@ pub type BoundedResourceTypeOf<T> = BoundedVec<
 	<T as Config>::MaxResourcesOnMint,
 >;
 
-pub type PropertyInfoOf<T> = PropertyInfo<
-	KeyLimitOf<T>,
-	ValueLimitOf<T>
->;
+pub type PropertyInfoOf<T> = PropertyInfo<KeyLimitOf<T>, ValueLimitOf<T>>;
 
 pub mod types;
 
@@ -239,14 +236,8 @@ pub mod pallet {
 	/// The stored types are use in the RPC interface only,
 	/// PolkadotJS won't generate TS types for them without this storage.
 	#[pallet::storage]
-	pub type DummyStorage<T: Config> = StorageValue<
-		_,
-		(
-			NftChild,
-			PhantomType<PropertyInfoOf<T>>
-		),
-		OptionQuery
-	>;
+	pub type DummyStorage<T: Config> =
+		StorageValue<_, (NftChild, PhantomType<PropertyInfoOf<T>>), OptionQuery>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]

@@ -23,12 +23,10 @@ use serde::Serialize;
 #[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			AccountId: Serialize,
 			BoundedString: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
 pub struct BaseInfo<AccountId, BoundedString> {
 	/// Original creator of the Base
@@ -44,7 +42,16 @@ pub struct BaseInfo<AccountId, BoundedString> {
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList, BoundedThemeProperties> {
+pub trait Base<
+	AccountId,
+	CollectionId,
+	NftId,
+	BoundedString,
+	BoundedParts,
+	BoundedCollectionList,
+	BoundedThemeProperties,
+>
+{
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,

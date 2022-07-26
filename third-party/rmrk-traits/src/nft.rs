@@ -4,16 +4,13 @@
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError};
+use sp_runtime::DispatchError;
 use sp_std::cmp::Eq;
 
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{
-	primitives::*,
-	serialize,
-};
+use crate::{primitives::*, serialize};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
@@ -33,7 +30,7 @@ pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 	/// Recipient (AccountId) of the royalty
 	pub recipient: AccountId,
 	/// Amount (Permill) of the royalty
-    pub amount: RoyaltyAmount,
+	pub amount: RoyaltyAmount,
 }
 
 /// Nft info.
@@ -41,13 +38,11 @@ pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 #[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			AccountId: Serialize,
 			RoyaltyAmount: Serialize,
 			BoundedString: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
 pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
@@ -71,7 +66,7 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 #[derive(Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct NftChild {
 	pub collection_id: CollectionId,
-	pub nft_id: NftId
+	pub nft_id: NftId,
 }
 
 /// Abstraction over a Nft system.

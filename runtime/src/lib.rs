@@ -33,24 +33,30 @@ pub use frame_support::{
 	log::{debug, error, trace},
 	pallet_prelude::MaxEncodedLen,
 	parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{
+		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness,
+		StorageInfo,
+	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
 };
-use frame_system::{ EnsureSigned, limits::{BlockLength, BlockWeights} };
 pub use frame_system::Call as SystemCall;
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureSigned,
+};
 pub use pallet_balances::Call as BalancesCall;
+pub use pallet_rmrk_core::{self, pallet::Config as CoreConfig};
+pub use pallet_rmrk_equip;
+pub use pallet_rmrk_market;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
-pub use pallet_rmrk_core::{self, pallet::Config as CoreConfig};
-pub use pallet_rmrk_equip;
-pub use pallet_rmrk_market;
 // pub use rmrk_traits::{AccountIdOrCollectionNftTuple, BasicResource};
 
 /// An index to a block.
@@ -555,7 +561,6 @@ impl pallet_uniques::Config for Runtime {
 	type ValueLimit = ValueLimit;
 	type WeightInfo = ();
 }
-
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(

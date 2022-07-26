@@ -2,31 +2,25 @@
 // This file is part of rmrk-substrate.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
-use sp_runtime::DispatchResult;
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
+use sp_runtime::DispatchResult;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
 
-use crate::{
-	primitives::*,
-	serialize,
-};
+use crate::{primitives::*, serialize};
 
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[derive(Encode, Decode, PartialEq, TypeInfo)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			BoundedKey: AsRef<[u8]>,
 			BoundedValue: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
-pub struct PropertyInfo<BoundedKey, BoundedValue>
-{
+pub struct PropertyInfo<BoundedKey, BoundedValue> {
 	/// Key of the property
 	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub key: BoundedKey,
