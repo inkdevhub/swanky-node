@@ -4052,6 +4052,59 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-rmrk-core"
+version = "0.0.1"
+source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-rmrk-equip"
+version = "0.0.1"
+source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-rmrk-market"
+version = "0.0.1"
+source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.26#e8a7d161f39db70cb27fdad6c6e215cf493ebc3b"
@@ -4144,6 +4197,20 @@ dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-uniques"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.26#e8a7d161f39db70cb27fdad6c6e215cf493ebc3b"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -4962,6 +5029,21 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "rmrk-traits"
+version = "0.0.1"
+source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7326,11 +7408,16 @@ dependencies = [
  "pallet-contracts-rpc-runtime-api",
  "pallet-dapps-staking",
  "pallet-randomness-collective-flip",
+ "pallet-rmrk-core",
+ "pallet-rmrk-equip",
+ "pallet-rmrk-market",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-uniques",
  "parity-scale-codec",
+ "rmrk-traits",
  "scale-info",
  "sp-api",
  "sp-block-builder",

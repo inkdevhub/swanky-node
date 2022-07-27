@@ -33,14 +33,20 @@ pub use frame_support::{
 	log::{debug, error, trace},
 	pallet_prelude::MaxEncodedLen,
 	parameter_types,
-	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{
+		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness,
+		StorageInfo,
+	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureSigned,
+};
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -346,6 +352,78 @@ impl pallet_dapps_staking::Config for Runtime {
 	type MaxEraStakeValues = MaxEraStakeValues;
 }
 
+parameter_types! {
+	pub const MaxRecursions: u32 = 10;
+	pub const ResourceSymbolLimit: u32 = 10;
+	pub const PartsLimit: u32 = 25;
+	pub const MaxPriorities: u32 = 25;
+	pub const CollectionSymbolLimit: u32 = 100;
+	pub const MaxResourcesOnMint: u32 = 100;
+}
+
+impl pallet_rmrk_core::Config for Runtime {
+	type Event = Event;
+	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxRecursions = MaxRecursions;
+	type ResourceSymbolLimit = ResourceSymbolLimit;
+	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
+	type CollectionSymbolLimit = CollectionSymbolLimit;
+	type MaxResourcesOnMint = MaxResourcesOnMint;
+}
+
+parameter_types! {
+	pub const MinimumOfferAmount: Balance = UNIT / 10_000;
+}
+
+impl pallet_rmrk_market::Config for Runtime {
+	type Event = Event;
+	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type Currency = Balances;
+	type MinimumOfferAmount = MinimumOfferAmount;
+}
+
+parameter_types! {
+	pub const CollectionDeposit: Balance = 10 * MILLIUNIT;
+	pub const ItemDeposit: Balance = 1 * UNIT;
+	pub const KeyLimit: u32 = 32;
+	pub const ValueLimit: u32 = 256;
+	pub const UniquesMetadataDepositBase: Balance = 10 * MILLIUNIT;
+	pub const AttributeDepositBase: Balance = 10 * MILLIUNIT;
+	//pub const DepositPerByte: Balance = CENTS;
+	pub const UniquesStringLimit: u32 = 128;
+	pub const MaxPropertiesPerTheme: u32 = 100;
+	pub const MaxCollectionsEquippablePerPart: u32 = 100;
+}
+
+impl pallet_rmrk_equip::Config for Runtime {
+	type Event = Event;
+	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
+	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
+}
+
+type CollectionId = u32;
+type StringLimit = UniquesStringLimit;
+
+impl pallet_uniques::Config for Runtime {
+	type Event = Event;
+	type CollectionId = CollectionId;
+	type ItemId = u32;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type Locker = pallet_rmrk_core::Pallet<Runtime>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = StringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
+}
+
 const DEFAULT_ACCOUNT: AccountId = AccountId32::new([0; 32]);
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
@@ -495,6 +573,10 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
+		RmrkEquip: pallet_rmrk_equip,
+		RmrkCore: pallet_rmrk_core,
+		RmrkMarket: pallet_rmrk_market,
+		Uniques: pallet_uniques,
 	}
 );
 
