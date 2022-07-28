@@ -7,10 +7,7 @@ use codec::Encode;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, UncheckedFrom};
 use pallet_rmrk_core::BoundedResourceTypeOf;
-use rmrk_traits::{
-	primitives::{CollectionId, NftId, ResourceId},
-	// BasicResource,
-};
+use rmrk_traits::primitives::{CollectionId, NftId, ResourceId};
 use sp_std::{marker::PhantomData, vec::Vec};
 
 enum RmrkFunc {
