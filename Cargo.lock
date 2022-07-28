@@ -692,6 +692,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "chain-extension-traits"
+version = "4.0.0"
+dependencies = [
+ "pallet-contracts",
+ "sp-runtime",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3934,6 +3942,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-chain-extension-rmrk"
+version = "0.1.0"
+dependencies = [
+ "chain-extension-traits",
+ "frame-support",
+ "frame-system",
+ "log",
+ "num-traits",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "pallet-contracts-rpc-runtime-api",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-contracts"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.26#e8a7d161f39db70cb27fdad6c6e215cf493ebc3b"
@@ -4056,6 +4086,7 @@ name = "pallet-rmrk-core"
 version = "0.0.1"
 source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -4204,6 +4235,7 @@ name = "pallet-uniques"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.26#e8a7d161f39db70cb27fdad6c6e215cf493ebc3b"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5036,6 +5068,7 @@ name = "rmrk-traits"
 version = "0.0.1"
 source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.26#3791ea5b7e383d46017a6ce67897e00cff924a97"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -7393,6 +7426,7 @@ dependencies = [
 name = "swanky-runtime"
 version = "0.7.0"
 dependencies = [
+ "chain-extension-traits",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
@@ -7403,6 +7437,7 @@ dependencies = [
  "hex-literal",
  "pallet-assets",
  "pallet-balances",
+ "pallet-chain-extension-rmrk",
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-contracts-rpc-runtime-api",
