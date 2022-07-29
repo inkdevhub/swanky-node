@@ -4,10 +4,14 @@ use sp_runtime::{DispatchError, Permill};
 use chain_extension_traits::ChainExtensionExec;
 
 use codec::Encode;
+use frame_support::BoundedVec;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, UncheckedFrom};
 use pallet_rmrk_core::BoundedResourceTypeOf;
-use rmrk_traits::primitives::{CollectionId, NftId, ResourceId};
+use rmrk_traits::{
+	primitives::{CollectionId, NftId, ResourceId},
+	BasicResource,
+};
 use sp_std::{marker::PhantomData, vec::Vec};
 
 enum RmrkFunc {
@@ -37,7 +41,7 @@ enum RmrkFunc {
 	// ChangeCollectionIssuer = 21,
 	// SetProperty = 22,
 	// LockCollection = 23,
-	// AddBasicResource = 24,
+	AddBasicResource = 24,
 	// AddComposableResource = 25,
 	// AddSlotResource = 26,
 	// AcceptResource = 27,
@@ -77,7 +81,7 @@ impl TryFrom<u32> for RmrkFunc {
 			// 21 => Ok(RmrkFunc::ChangeCollectionIssuer),
 			// 22 => Ok(RmrkFunc::SetProperty),
 			// 23 => Ok(RmrkFunc::LockCollection),
-			// 24 => Ok(RmrkFunc::AddBasicResource),
+			24 => Ok(RmrkFunc::AddBasicResource),
 			// 25 => Ok(RmrkFunc::AddComposableResource),
 			// 26 => Ok(RmrkFunc::AddSlotResource),
 			// 27 => Ok(RmrkFunc::AcceptResource),
@@ -89,7 +93,6 @@ impl TryFrom<u32> for RmrkFunc {
 	}
 }
 
-// pub struct DappsStakingExtension;
 pub struct RmrkExtension<R>(PhantomData<R>);
 
 impl<
@@ -101,7 +104,6 @@ impl<
 	where
 		E: Ext<T = T>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-		// T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	{
 		let func_id = RmrkFunc::try_from(func_id)?;
 
@@ -114,7 +116,7 @@ impl<
 				let nft_id_encoded = nft_id.encode();
 
 				env.write(&nft_id_encoded, false, None).map_err(|_| {
-					DispatchError::Other("RMRK chain Extension failed to write result")
+					DispatchError::Other("RMRK chain Extension failed to write next_nft_id")
 				})?;
 			},
 
@@ -124,7 +126,7 @@ impl<
 				let index_encoded = index.encode();
 
 				env.write(&index_encoded, false, None).map_err(|_| {
-					DispatchError::Other("RMRK chain Extension failed to write result")
+					DispatchError::Other("RMRK chain Extension failed to write collection_index")
 				})?;
 			},
 
@@ -137,7 +139,7 @@ impl<
 				let resource_id_encoded = resource_id.encode();
 
 				env.write(&resource_id_encoded, false, None).map_err(|_| {
-					DispatchError::Other("RMRK chain Extension failed to write result")
+					DispatchError::Other("RMRK chain Extension failed to write next_resource_id")
 				})?;
 			},
 
@@ -149,7 +151,7 @@ impl<
 				let nfts_encoded = nfts.encode();
 
 				env.write(&nfts_encoded, false, None).map_err(|_| {
-					DispatchError::Other("RMRK chain Extension failed to write result")
+					DispatchError::Other("RMRK chain Extension failed to write nfts")
 				})?;
 			},
 
@@ -200,22 +202,23 @@ impl<
 				)?;
 			},
 
-			// RmrkFunc::AddBasicResource => {
-			//     let mut env = env.buf_in_buf_out();
-			// 	let (collection_id, nft_id, resource): (
-			//         T::CollectionId,
-			// 		T::ItemId,
-			// 		BasicResource<T>,
-			// 	) = env.read_as_unbounded(env.in_len())?;
+			RmrkFunc::AddBasicResource => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource): (
+					T::CollectionId,
+					T::ItemId,
+					BasicResource<BoundedVec<u8, T::StringLimit>>,
+				) = env.read_as_unbounded(env.in_len())?;
 
-			//     let caller = env.ext().caller().clone();
-			// 	let add_result = pallet_rmrk_core::Pallet::<T>::add_basic_resource(
-			//         RawOrigin::Signed(caller).into(),
-			// 		collection_id,
-			// 		nft_id,
-			// 		resource,
-			// 	)?;
-			// },
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::add_basic_resource(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					resource,
+				)?;
+			},
+
 			RmrkFunc::RemoveResource => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
