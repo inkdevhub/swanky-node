@@ -190,15 +190,18 @@ impl<
 
 			RmrkFunc::CreateCollection => {
 				let mut env = env.buf_in_buf_out();
-				let (metadata, max, symbol): (Vec<u8>, Option<u32>, Vec<u8>) =
-					env.read_as_unbounded(env.in_len())?;
+				let (metadata, max, symbol): (
+					Vec<u8>,
+					Option<u32>,
+					BoundedVec<u8, T::CollectionSymbolLimit>,
+				) = env.read_as_unbounded(env.in_len())?;
 
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::create_collection(
 					RawOrigin::Signed(caller).into(),
 					metadata.try_into().unwrap(),
 					max,
-					symbol.try_into().unwrap(), // TODO Option<BoundedResourceTypeOf<T>>
+					symbol.try_into().unwrap(),
 				)?;
 			},
 
