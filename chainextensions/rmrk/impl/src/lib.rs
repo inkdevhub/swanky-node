@@ -19,11 +19,11 @@ enum RmrkFunc {
 	NextNftId = 1,
 	CollectionIndex = 2,
 	NextResourceId = 3,
-	// Collections = 4,
+	Collections = 4,
 	Nfts = 5,
 	// Priorities = 6,
 	// Children = 7,
-	// Resources = 8,
+	Resources = 8,
 	// EquippableBases = 9,
 	// EquippableSlots = 10,
 	// Properties = 11,
@@ -59,11 +59,11 @@ impl TryFrom<u32> for RmrkFunc {
 			1 => Ok(RmrkFunc::NextNftId),
 			2 => Ok(RmrkFunc::CollectionIndex),
 			3 => Ok(RmrkFunc::NextResourceId),
-			// 4 => Ok(RmrkFunc::Collections),
+			4 => Ok(RmrkFunc::Collections),
 			5 => Ok(RmrkFunc::Nfts),
 			// 6 => Ok(RmrkFunc::Priorities),
 			// 7 => Ok(RmrkFunc::Children),
-			// 8 => Ok(RmrkFunc::Resources),
+			8 => Ok(RmrkFunc::Resources),
 			// 9 => Ok(RmrkFunc::EquippableBases),
 			// 10 => Ok(RmrkFunc::EquippableSlots),
 			// 11 => Ok(RmrkFunc::Properties),
@@ -143,6 +143,18 @@ impl<
 				})?;
 			},
 
+			RmrkFunc::Collections => {
+				let mut env = env.buf_in_buf_out();
+				let collection_id: T::CollectionId = env.read_as()?;
+
+				let collections = pallet_rmrk_core::Pallet::<T>::collections(collection_id);
+				let collections_encoded = collections.encode();
+
+				env.write(&collections_encoded, false, None).map_err(|_| {
+					DispatchError::Other("RMRK chain Extension failed to write collections_encoded")
+				})?;
+			},
+
 			RmrkFunc::Nfts => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id): (T::CollectionId, T::ItemId) = env.read_as()?;
@@ -152,6 +164,20 @@ impl<
 
 				env.write(&nfts_encoded, false, None).map_err(|_| {
 					DispatchError::Other("RMRK chain Extension failed to write nfts")
+				})?;
+			},
+
+			RmrkFunc::Resources => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
+					env.read_as()?;
+
+				let resources =
+					pallet_rmrk_core::Pallet::<T>::resources((collection_id, nft_id, resource_id));
+				let resources_encoded = resources.encode();
+
+				env.write(&resources_encoded, false, None).map_err(|_| {
+					DispatchError::Other("RMRK chain Extension failed to write resources_encoded")
 				})?;
 			},
 
