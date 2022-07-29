@@ -1,5 +1,5 @@
 [package]
-name = "chain-extension-types"
+name = "rmrk-chain-extension-types"
 version = "4.0.0"
 authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2021"
@@ -14,6 +14,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 scale-info = { version = "2.1.0", default-features = false, features = ["derive"] }
+
 
 
 [features]

@@ -3956,6 +3956,7 @@ dependencies = [
  "pallet-rmrk-core",
  "pallet-uniques",
  "parity-scale-codec",
+ "rmrk-chain-extension-types",
  "rmrk-traits",
  "scale-info",
  "sp-core",
@@ -5061,6 +5062,17 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "rmrk-chain-extension-types"
+version = "4.0.0"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
