@@ -8,13 +8,12 @@ use frame_support::BoundedVec;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, UncheckedFrom};
 use pallet_rmrk_core::BoundedResourceTypeOf;
+use rmrk_chain_extension_types::RmrkFunc;
 use rmrk_traits::{
 	primitives::{CollectionId, NftId, ResourceId},
 	BasicResource,
 };
 use sp_std::{marker::PhantomData, vec::Vec};
-use rmrk_chain_extension_types::RmrkFunc;
-
 
 pub struct RmrkExtension<R>(PhantomData<R>);
 
@@ -139,19 +138,28 @@ impl<
 
 			RmrkFunc::CreateCollection => {
 				let mut env = env.buf_in_buf_out();
-				let (metadata, max, symbol): (
-					Vec<u8>,
-					Option<u32>,
-					BoundedVec<u8, T::CollectionSymbolLimit>,
-				) = env.read_as_unbounded(env.in_len())?;
+				let (metadata, max, symbol): (Vec<u8>, Option<u32>, Vec<u8>) =
+					env.read_as_unbounded(env.in_len())?;
 
 				let caller = env.ext().caller().clone();
-				pallet_rmrk_core::Pallet::<T>::create_collection(
+
+				let weight = 100_000_000_000; // TODO update after RMRK pallet implements weights
+				env.charge_weight(weight)?;
+
+				sp_std::if_std! {println!(
+					"[RmrkExtension] create_collection metadata{:?}, symbol{:?}, caller{:?}, weight {:?}",
+					metadata, symbol, caller, weight
+				);}
+				let create_result = pallet_rmrk_core::Pallet::<T>::create_collection(
 					RawOrigin::Signed(caller).into(),
 					metadata.try_into().unwrap(),
 					max,
 					symbol.try_into().unwrap(),
-				)?;
+				);
+				sp_std::if_std! {println!(
+					"[RmrkExtension] create_result {:?}",
+					create_result
+				);}
 			},
 
 			RmrkFunc::AddBasicResource => {
