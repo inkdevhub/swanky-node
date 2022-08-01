@@ -27,27 +27,37 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
-use frame_support::dispatch::DispatchErrorWithPostInfo;
 pub use frame_support::{
 	construct_runtime,
 	log::{debug, error, trace},
 	pallet_prelude::MaxEncodedLen,
 	parameter_types,
-	traits::{ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{
+		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU8, KeyOwnerProofSystem, Randomness,
+		StorageInfo,
+	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
 pub use frame_system::Call as SystemCall;
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureSigned,
+};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
+
+// Chain extensions
+use chain_extension_traits::ChainExtensionExec;
+use pallet_chain_extension_rmrk::RmrkExtension;
+pub use pallet_rmrk_core;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -346,6 +356,78 @@ impl pallet_dapps_staking::Config for Runtime {
 	type MaxEraStakeValues = MaxEraStakeValues;
 }
 
+parameter_types! {
+	pub const MaxRecursions: u32 = 10;
+	pub const ResourceSymbolLimit: u32 = 10;
+	pub const PartsLimit: u32 = 25;
+	pub const MaxPriorities: u32 = 25;
+	pub const CollectionSymbolLimit: u32 = 100;
+	pub const MaxResourcesOnMint: u32 = 100;
+}
+
+impl pallet_rmrk_core::Config for Runtime {
+	type Event = Event;
+	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxRecursions = MaxRecursions;
+	type ResourceSymbolLimit = ResourceSymbolLimit;
+	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
+	type CollectionSymbolLimit = CollectionSymbolLimit;
+	type MaxResourcesOnMint = MaxResourcesOnMint;
+}
+
+parameter_types! {
+	pub const MinimumOfferAmount: Balance = UNIT / 10_000;
+}
+
+impl pallet_rmrk_market::Config for Runtime {
+	type Event = Event;
+	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type Currency = Balances;
+	type MinimumOfferAmount = MinimumOfferAmount;
+}
+
+parameter_types! {
+	pub const CollectionDeposit: Balance = 10 * MILLIUNIT;
+	pub const ItemDeposit: Balance = 1 * UNIT;
+	pub const KeyLimit: u32 = 32;
+	pub const ValueLimit: u32 = 256;
+	pub const UniquesMetadataDepositBase: Balance = 10 * MILLIUNIT;
+	pub const AttributeDepositBase: Balance = 10 * MILLIUNIT;
+	//pub const DepositPerByte: Balance = CENTS;
+	pub const UniquesStringLimit: u32 = 128;
+	pub const MaxPropertiesPerTheme: u32 = 100;
+	pub const MaxCollectionsEquippablePerPart: u32 = 100;
+}
+
+impl pallet_rmrk_equip::Config for Runtime {
+	type Event = Event;
+	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
+	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
+}
+
+type CollectionId = u32;
+type StringLimit = UniquesStringLimit;
+
+impl pallet_uniques::Config for Runtime {
+	type Event = Event;
+	type CollectionId = CollectionId;
+	type ItemId = u32;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type Locker = pallet_rmrk_core::Pallet<Runtime>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = StringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
+}
+
 const DEFAULT_ACCOUNT: AccountId = AccountId32::new([0; 32]);
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
@@ -390,92 +472,40 @@ pub struct BondStakeInput<AccountId, Balance> {
 /// Contract extension for Local Chain-Extension
 pub struct LocalChainExtension;
 
+enum ExtensionId {
+	// DappsStaking = 34,
+	Rmrk = 35,
+}
+
+impl TryFrom<u32> for ExtensionId {
+	type Error = DispatchError;
+
+	fn try_from(value: u32) -> Result<Self, Self::Error> {
+		match value {
+			// 34 => return Ok(ExtensionId::DappsStaking),
+			35 => return Ok(ExtensionId::Rmrk),
+			_ => return Err(DispatchError::Other("Unimplemented ChainExtension pallet")),
+		}
+	}
+}
+
 impl ChainExtension<Runtime> for LocalChainExtension {
 	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
 	where
+		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		match func_id {
-			// dapps_staking pallet number is 34 and 01 is function number
-			// dapps_staking - current_era()
-			3401 => {
-				let mut env = env.buf_in_buf_out();
-				let current_era = crate::DappsStaking::current_era();
-				let current_era_encoded = current_era.encode();
-				trace!(
-					target: "runtime",
-					"[ChainExtension]|call|func_id:{:} current_era:{:?}",
-					func_id,
-					&current_era_encoded
-				);
-				env.write(&current_era_encoded, false, None).map_err(|_| {
-					DispatchError::Other("ChainExtension failed to call current_era")
-				})?;
-			},
-
-			// dapps_staking - general_era_info()
-			3402 => {
-				let mut env = env.buf_in_buf_out();
-				let arg: u32 = env.read_as()?;
-				let era_info = DappsStaking::general_era_info(arg)
-					.ok_or(DispatchError::Other("general_era_info call failed"));
-				sp_std::if_std! {println!("era_info:{:?}", era_info)};
-				let era_info_encoded = era_info.encode();
-				sp_std::if_std! {println!("era_info_encoded:{:?}", era_info_encoded)};
-				trace!(
-					target: "runtime",
-					"[ChainExtension]|call|func_id:{:} era_info_encoded:{:?}, arg:{:?}",
-					func_id,
-					era_info_encoded,
-					arg
-				);
-				env.write(&era_info_encoded, false, None).map_err(|_| {
-					DispatchError::Other("ChainExtension failed to call general_era_info")
-				})?;
-			},
-
-			// dapps_staking - bond_and_stake()
-			3403 => {
-				let mut env = env.buf_in_buf_out();
-				let args: BondStakeInput<AccountId, Balance> = env.read_as()?;
-				debug!(
-					target: "runtime",
-					"[ChainExtension]|call|func_id:{:} arg:{:?}",
-					func_id,
-					args,
-				);
-
-				let caller = AccountId::decode(&mut env.ext().caller().as_ref()).unwrap();
-				let contract = AccountId::decode(&mut args.account_id.as_ref()).unwrap();
-				let smart_contract = SmartContract::Wasm(contract);
-
-				let result = DappsStaking::bond_and_stake(
-					Origin::signed(caller),
-					smart_contract,
-					args.value,
-				);
-
-				result.map_err(|err: DispatchErrorWithPostInfo| {
-					debug!(
-						target: "runtime",
-						"[ChainExtension]|call|func_id:{:} Error:{:#?}",
-						func_id,
-						err.error,
-					);
-					DispatchError::Other("ChainExtension failed to call bondAndStake")
-				})?;
-			},
-
-			_ => {
-				error!("Called an unregistered `func_id`: {:}", func_id);
-				return Err(DispatchError::Other("Unimplemented func_id"))
+		let pallet_id = ExtensionId::try_from(func_id / 100)?;
+		let func_id_matcher = func_id % 100;
+		match pallet_id {
+			// ExtensionId::DappsStaking => {
+			//     DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
+			// }
+			ExtensionId::Rmrk => {
+				RmrkExtension::execute_func::<E>(func_id_matcher, env)?;
 			},
 		}
 		Ok(RetVal::Converging(0))
-	}
-
-	fn enabled() -> bool {
-		true
 	}
 }
 
@@ -495,6 +525,10 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
+		RmrkEquip: pallet_rmrk_equip,
+		RmrkCore: pallet_rmrk_core,
+		RmrkMarket: pallet_rmrk_market,
+		Uniques: pallet_uniques,
 	}
 );
 
