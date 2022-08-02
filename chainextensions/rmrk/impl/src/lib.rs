@@ -10,8 +10,8 @@ use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, 
 use pallet_rmrk_core::BoundedResourceTypeOf;
 use rmrk_chain_extension_types::RmrkFunc;
 use rmrk_traits::{
-	primitives::{CollectionId, NftId, ResourceId},
-	BasicResource,
+	primitives::{CollectionId, NftId, PartId, ResourceId},
+	BasicResource, ComposableResource, SlotResource,
 };
 use sp_std::{marker::PhantomData, vec::Vec};
 
@@ -70,6 +70,9 @@ impl<
 				let collection_id: T::CollectionId = env.read_as()?;
 
 				let collections = pallet_rmrk_core::Pallet::<T>::collections(collection_id);
+
+				frame_support::log::info!("[RmrkExtension] collections {:?}", collections);
+
 				let collections_encoded = collections.encode();
 
 				env.write(&collections_encoded, false, None).map_err(|_| {
@@ -179,6 +182,68 @@ impl<
 				)?;
 			},
 
+			RmrkFunc::LockCollection => {
+				let mut env = env.buf_in_buf_out();
+				let collection_id: u32 = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::lock_collection(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+				)?;
+			},
+
+			RmrkFunc::AddComposableResource => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource): (
+					T::CollectionId,
+					T::ItemId,
+					ComposableResource<
+						BoundedVec<u8, T::StringLimit>,
+						BoundedVec<PartId, T::PartsLimit>,
+					>,
+				) = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::add_composable_resource(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					resource,
+				)?;
+			},
+
+			RmrkFunc::AddSlotResource => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource): (
+					T::CollectionId,
+					T::ItemId,
+					SlotResource<BoundedVec<u8, T::StringLimit>>,
+				) = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::add_slot_resource(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					resource,
+				)?;
+			},
+
+			RmrkFunc::AcceptResource => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
+					env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::accept_resource(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					resource_id,
+				)?;
+			},
+
 			RmrkFunc::RemoveResource => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
@@ -190,6 +255,37 @@ impl<
 					collection_id,
 					nft_id,
 					resource_id,
+				)?;
+			},
+
+			RmrkFunc::AcceptResourceRemoval => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
+					env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::accept_resource_removal(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					resource_id,
+				)?;
+			},
+
+			RmrkFunc::SetPriority => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, priorities): (
+					T::CollectionId,
+					T::ItemId,
+					BoundedVec<ResourceId, T::MaxPriorities>,
+				) = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::set_priority(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					priorities,
 				)?;
 			},
 		}
