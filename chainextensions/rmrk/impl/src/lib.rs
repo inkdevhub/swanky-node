@@ -11,7 +11,7 @@ use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, 
 use pallet_rmrk_core::BoundedResourceTypeOf;
 use rmrk_chain_extension_types::RmrkFunc;
 use rmrk_traits::{
-	primitives::{CollectionId, NftId, PartId, ResourceId},
+	primitives::{BaseId, CollectionId, NftId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, ComposableResource, SlotResource,
 };
 use sp_std::{marker::PhantomData, vec::Vec};
@@ -93,6 +93,40 @@ impl<
 				})?;
 			},
 
+			RmrkFunc::Priorities => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
+					env.read_as()?;
+
+				let priorities =
+					pallet_rmrk_core::Pallet::<T>::priorities((collection_id, nft_id, resource_id));
+				let priorities_encoded = priorities.encode();
+
+				env.write(&priorities_encoded, false, None).map_err(|_| {
+					DispatchError::Other("RMRK chain Extension failed to write priorities_encoded")
+				})?;
+			},
+
+			RmrkFunc::Children => {
+				let mut env = env.buf_in_buf_out();
+				let ((parent_collection_id, parent_nft_id), (child_collection_id, child_nft_id)): (
+					(T::CollectionId, T::ItemId),
+					(T::CollectionId, T::ItemId),
+				) = env.read_as()?;
+
+				let children_res = pallet_rmrk_core::Pallet::<T>::children(
+					(parent_collection_id, parent_nft_id),
+					(child_collection_id, child_nft_id),
+				);
+				let children_res_encoded = children_res.encode();
+
+				env.write(&children_res_encoded, false, None).map_err(|_| {
+					DispatchError::Other(
+						"RMRK chain Extension failed to write children_res_encoded",
+					)
+				})?;
+			},
+
 			RmrkFunc::Resources => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
@@ -104,6 +138,51 @@ impl<
 
 				env.write(&resources_encoded, false, None).map_err(|_| {
 					DispatchError::Other("RMRK chain Extension failed to write resources_encoded")
+				})?;
+			},
+
+			RmrkFunc::EquippableBases => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, base_id): (T::CollectionId, T::ItemId, BaseId) =
+					env.read_as()?;
+
+				let equippable_base_res = pallet_rmrk_core::Pallet::<T>::equippable_bases((
+					collection_id,
+					nft_id,
+					base_id,
+				));
+				let equippable_base_res_encoded = equippable_base_res.encode();
+
+				env.write(&equippable_base_res_encoded, false, None).map_err(|_| {
+					DispatchError::Other(
+						"RMRK chain Extension failed to write equippable_base_res_encoded",
+					)
+				})?;
+			},
+
+			RmrkFunc::EquippableSlots => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, resource_id, base_id, slot_id): (
+					T::CollectionId,
+					T::ItemId,
+					ResourceId,
+					BaseId,
+					SlotId,
+				) = env.read_as()?;
+
+				let equippable_slot_res = pallet_rmrk_core::Pallet::<T>::equippable_slots((
+					collection_id,
+					nft_id,
+					resource_id,
+					base_id,
+					slot_id,
+				));
+				let equippable_slot_res_encoded = equippable_slot_res.encode();
+
+				env.write(&equippable_slot_res_encoded, false, None).map_err(|_| {
+					DispatchError::Other(
+						"RMRK chain Extension failed to write equippable_slot_res_encoded",
+					)
 				})?;
 			},
 
