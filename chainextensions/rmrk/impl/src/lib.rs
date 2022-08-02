@@ -107,6 +107,35 @@ impl<
 				})?;
 			},
 
+			RmrkFunc::Properties => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, maybe_nft_id, key): (
+					T::CollectionId,
+					Option<T::ItemId>,
+					BoundedVec<u8, T::KeyLimit>,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let properties =
+					pallet_rmrk_core::Pallet::<T>::properties((collection_id, maybe_nft_id, key));
+				let properties_encoded = properties.encode();
+
+				env.write(&properties_encoded, false, None).map_err(|_| {
+					DispatchError::Other("RMRK chain Extension failed to write properties_encoded")
+				})?;
+			},
+
+			RmrkFunc::Lock => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id): (T::CollectionId, T::ItemId) = env.read_as()?;
+
+				let lock = pallet_rmrk_core::Pallet::<T>::lock((collection_id, nft_id));
+				let lock_encoded = lock.encode();
+
+				env.write(&lock_encoded, false, None).map_err(|_| {
+					DispatchError::Other("RMRK chain Extension failed to write lock")
+				})?;
+			},
+
 			RmrkFunc::MintNft => {
 				let mut env = env.buf_in_buf_out();
 				let (
@@ -171,7 +200,7 @@ impl<
 					transferable,
 					resources,
 				)?;
-			}
+			},
 
 			RmrkFunc::CreateCollection => {
 				let mut env = env.buf_in_buf_out();

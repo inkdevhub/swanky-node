@@ -14,8 +14,8 @@ pub enum RmrkFunc {
 	Resources = 8,
 	// EquippableBases = 9,
 	// EquippableSlots = 10,
-	// Properties = 11,
-	// Lock = 12,
+	Properties = 11,
+	Lock = 12,
 
 	// extrinsics
 	MintNft = 13,
@@ -54,8 +54,8 @@ impl TryFrom<u32> for RmrkFunc {
 			8 => Ok(RmrkFunc::Resources),
 			// 9 => Ok(RmrkFunc::EquippableBases),
 			// 10 => Ok(RmrkFunc::EquippableSlots),
-			// 11 => Ok(RmrkFunc::Properties),
-			// 12 => Ok(RmrkFunc::Lock),
+			11 => Ok(RmrkFunc::Properties),
+			12 => Ok(RmrkFunc::Lock),
 
 			// extrinsics
 			13 => Ok(RmrkFunc::MintNft),
