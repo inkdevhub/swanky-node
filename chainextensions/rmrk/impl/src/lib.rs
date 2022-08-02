@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_runtime::{DispatchError, Permill};
+use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 
 use chain_extension_traits::ChainExtensionExec;
 
@@ -12,7 +12,7 @@ use pallet_rmrk_core::BoundedResourceTypeOf;
 use rmrk_chain_extension_types::RmrkFunc;
 use rmrk_traits::{
 	primitives::{CollectionId, NftId, PartId, ResourceId},
-	BasicResource, ComposableResource, SlotResource,
+	AccountIdOrCollectionNftTuple, BasicResource, ComposableResource, SlotResource,
 };
 use sp_std::{marker::PhantomData, vec::Vec};
 
@@ -166,6 +166,92 @@ impl<
 				);}
 			},
 
+			RmrkFunc::BurnNft => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, max_burns): (T::CollectionId, T::ItemId, u32) =
+					env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::burn_nft(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					max_burns,
+				)?;
+			},
+
+			RmrkFunc::DestroyCollection => {
+				let mut env = env.buf_in_buf_out();
+				let collection_id: u32 = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::destroy_collection(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+				)?;
+			},
+
+			RmrkFunc::Send => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, new_owner): (
+					T::CollectionId,
+					T::ItemId,
+					AccountIdOrCollectionNftTuple<T::AccountId>,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::send(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					new_owner,
+				)?;
+			},
+
+			RmrkFunc::AcceptNft => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id, new_owner): (
+					T::CollectionId,
+					T::ItemId,
+					AccountIdOrCollectionNftTuple<T::AccountId>,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::accept_nft(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+					new_owner,
+				)?;
+			},
+
+			RmrkFunc::RejectNft => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, nft_id): (T::CollectionId, T::ItemId) = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::reject_nft(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					nft_id,
+				)?;
+			},
+
+			RmrkFunc::ChangeCollectionIssuer => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, new_issuer): (
+					T::CollectionId,
+					<T::Lookup as StaticLookup>::Source,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::change_collection_issuer(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					new_issuer,
+				)?;
+			},
+
 			RmrkFunc::SetProperty => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, maybe_nft_id, key, value): (
@@ -185,6 +271,17 @@ impl<
 				)?;
 			},
 
+			RmrkFunc::LockCollection => {
+				let mut env = env.buf_in_buf_out();
+				let collection_id: u32 = env.read_as()?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::lock_collection(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+				)?;
+			},
+
 			RmrkFunc::AddBasicResource => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id, resource): (
@@ -199,17 +296,6 @@ impl<
 					collection_id,
 					nft_id,
 					resource,
-				)?;
-			},
-
-			RmrkFunc::LockCollection => {
-				let mut env = env.buf_in_buf_out();
-				let collection_id: u32 = env.read_as()?;
-
-				let caller = env.ext().caller().clone();
-				pallet_rmrk_core::Pallet::<T>::lock_collection(
-					RawOrigin::Signed(caller).into(),
-					collection_id,
 				)?;
 			},
 
