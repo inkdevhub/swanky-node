@@ -1,4 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+
 use sp_runtime::{DispatchError, Permill};
 
 use chain_extension_traits::ChainExtensionExec;
@@ -165,6 +166,25 @@ impl<
 				);}
 			},
 
+			RmrkFunc::SetProperty => {
+				let mut env = env.buf_in_buf_out();
+				let (collection_id, maybe_nft_id, key, value): (
+					T::CollectionId,
+					Option<T::ItemId>,
+					BoundedVec<u8, T::KeyLimit>,
+					BoundedVec<u8, T::ValueLimit>,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::set_property(
+					RawOrigin::Signed(caller).into(),
+					collection_id,
+					maybe_nft_id,
+					key,
+					value,
+				)?;
+			},
+
 			RmrkFunc::AddBasicResource => {
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id, resource): (
@@ -202,7 +222,7 @@ impl<
 						BoundedVec<u8, T::StringLimit>,
 						BoundedVec<PartId, T::PartsLimit>,
 					>,
-				) = env.read_as()?;
+				) = env.read_as_unbounded(env.in_len())?;
 
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::add_composable_resource(
@@ -219,7 +239,7 @@ impl<
 					T::CollectionId,
 					T::ItemId,
 					SlotResource<BoundedVec<u8, T::StringLimit>>,
-				) = env.read_as()?;
+				) = env.read_as_unbounded(env.in_len())?;
 
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::add_slot_resource(
@@ -278,7 +298,7 @@ impl<
 					T::CollectionId,
 					T::ItemId,
 					BoundedVec<ResourceId, T::MaxPriorities>,
-				) = env.read_as()?;
+				) = env.read_as_unbounded(env.in_len())?;
 
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::set_priority(
