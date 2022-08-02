@@ -19,7 +19,7 @@ pub enum RmrkFunc {
 
 	// extrinsics
 	MintNft = 13,
-	// MintNftDirectlyToNft = 14,
+	MintNftDirectlyToNft = 14,
 	CreateCollection = 15,
 	BurnNft = 16,
 	DestroyCollection = 17,
@@ -59,7 +59,7 @@ impl TryFrom<u32> for RmrkFunc {
 
 			// extrinsics
 			13 => Ok(RmrkFunc::MintNft),
-			// 14 => Ok(RmrkFunc::MintNftDirectlyToNft),
+			14 => Ok(RmrkFunc::MintNftDirectlyToNft),
 			15 => Ok(RmrkFunc::CreateCollection),
 			16 => Ok(RmrkFunc::BurnNft),
 			17 => Ok(RmrkFunc::DestroyCollection),

@@ -110,7 +110,7 @@ impl<
 			RmrkFunc::MintNft => {
 				let mut env = env.buf_in_buf_out();
 				let (
-					beneficiary,
+					owner,
 					collection_id,
 					royalty_recipient,
 					royalty,
@@ -130,7 +130,7 @@ impl<
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::mint_nft(
 					RawOrigin::Signed(caller).into(),
-					Some(beneficiary.clone()),
+					Some(owner.clone()),
 					collection_id,
 					royalty_recipient,
 					royalty,
@@ -139,6 +139,39 @@ impl<
 					resources,
 				)?;
 			},
+
+			RmrkFunc::MintNftDirectlyToNft => {
+				let mut env = env.buf_in_buf_out();
+				let (
+					owner,
+					collection_id,
+					royalty_recipient,
+					royalty,
+					metadata,
+					transferable,
+					resources,
+				): (
+					(T::CollectionId, T::ItemId),
+					T::CollectionId,
+					Option<T::AccountId>,
+					Option<Permill>,
+					BoundedVec<u8, T::StringLimit>,
+					bool,
+					Option<BoundedResourceTypeOf<T>>,
+				) = env.read_as_unbounded(env.in_len())?;
+
+				let caller = env.ext().caller().clone();
+				pallet_rmrk_core::Pallet::<T>::mint_nft_directly_to_nft(
+					RawOrigin::Signed(caller).into(),
+					owner,
+					collection_id,
+					royalty_recipient,
+					royalty,
+					metadata.try_into().unwrap(),
+					transferable,
+					resources,
+				)?;
+			}
 
 			RmrkFunc::CreateCollection => {
 				let mut env = env.buf_in_buf_out();
