@@ -380,8 +380,10 @@ impl<
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, new_issuer): (
 					T::CollectionId,
-					<T::Lookup as StaticLookup>::Source,
-				) = env.read_as_unbounded(env.in_len())?;
+					T::AccountId,
+				) = env.read_as()?;
+
+				let new_issuer = <T::Lookup as StaticLookup>::unlookup(new_issuer);
 
 				let caller = env.ext().caller().clone();
 				pallet_rmrk_core::Pallet::<T>::change_collection_issuer(
