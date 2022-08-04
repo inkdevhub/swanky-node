@@ -72,8 +72,6 @@ impl<
 
 				let collections = pallet_rmrk_core::Pallet::<T>::collections(collection_id);
 
-				frame_support::log::info!("[RmrkExtension] collections {:?}", collections);
-
 				let collections_encoded = collections.encode();
 
 				env.write(&collections_encoded, false, None).map_err(|_| {
