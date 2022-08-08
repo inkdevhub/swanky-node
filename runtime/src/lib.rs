@@ -9,7 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use codec::{Decode, Encode};
 use pallet_contracts::{
 	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+		ChainExtension, RegisteredChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
 	},
 	DefaultContractAccessWeight,
 };
@@ -316,7 +316,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = LocalChainExtension;
+	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -469,42 +469,38 @@ pub struct BondStakeInput<AccountId, Balance> {
 	value: Balance,
 }
 
-/// Contract extension for Local Chain-Extension
-pub struct LocalChainExtension;
+#[derive(Default)]
+pub struct DappsStakingChainExtension;
 
-enum ExtensionId {
-	// DappsStaking = 34,
-	Rmrk = 35,
+impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
+	const ID: u16 = 0;
 }
 
-impl TryFrom<u32> for ExtensionId {
-	type Error = DispatchError;
-
-	fn try_from(value: u32) -> Result<Self, Self::Error> {
-		match value {
-			// 34 => return Ok(ExtensionId::DappsStaking),
-			35 => return Ok(ExtensionId::Rmrk),
-			_ => return Err(DispatchError::Other("Unimplemented ChainExtension pallet")),
-		}
-	}
-}
-
-impl ChainExtension<Runtime> for LocalChainExtension {
-	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+impl ChainExtension<Runtime> for DappsStakingChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
 	where
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		let pallet_id = ExtensionId::try_from(func_id / 100)?;
-		let func_id_matcher = func_id % 100;
-		match pallet_id {
-			// ExtensionId::DappsStaking => {
-			//     DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
-			// }
-			ExtensionId::Rmrk => {
-				RmrkExtension::execute_func::<E>(func_id_matcher, env)?;
-			},
-		}
+		// DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
+		Ok(RetVal::Converging(0))
+	}
+}
+
+#[derive(Default)]
+pub struct RmrkChainExtension;
+
+impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
+	const ID: u16 = 1;
+}
+
+impl ChainExtension<Runtime> for RmrkChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		E: Ext<T = Runtime>,
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		RmrkExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
 }
