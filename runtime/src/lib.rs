@@ -473,7 +473,7 @@ pub struct BondStakeInput<AccountId, Balance> {
 pub struct DappsStakingChainExtension;
 
 impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
-	const ID: u16 = 0;
+	const ID: u16 = 34;
 }
 
 impl ChainExtension<Runtime> for DappsStakingChainExtension {
@@ -491,7 +491,7 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 pub struct RmrkChainExtension;
 
 impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
-	const ID: u16 = 1;
+	const ID: u16 = 35;
 }
 
 impl ChainExtension<Runtime> for RmrkChainExtension {
