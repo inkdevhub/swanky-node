@@ -233,9 +233,9 @@ impl<
 					Option<BoundedResourceTypeOf<T>>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::mint_nft(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					Some(owner.clone()),
 					collection_id,
 					royalty_recipient,
@@ -266,9 +266,9 @@ impl<
 					Option<BoundedResourceTypeOf<T>>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::mint_nft_directly_to_nft(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					owner,
 					collection_id,
 					royalty_recipient,
@@ -284,17 +284,17 @@ impl<
 				let (metadata, max, symbol): (Vec<u8>, Option<u32>, Vec<u8>) =
 					env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 
 				let weight = 100_000_000_000; // TODO update after RMRK pallet implements weights
 				env.charge_weight(weight)?;
 
 				sp_std::if_std! {println!(
 					"[RmrkExtension] create_collection metadata{:?}, symbol{:?}, caller{:?}, weight {:?}",
-					metadata, symbol, caller, weight
+					metadata, symbol, contract, weight
 				);}
 				let create_result = pallet_rmrk_core::Pallet::<T>::create_collection(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					metadata.try_into().unwrap(),
 					max,
 					symbol.try_into().unwrap(),
@@ -310,9 +310,9 @@ impl<
 				let (collection_id, nft_id, max_burns): (T::CollectionId, T::ItemId, u32) =
 					env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::burn_nft(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					max_burns,
@@ -323,9 +323,9 @@ impl<
 				let mut env = env.buf_in_buf_out();
 				let collection_id: u32 = env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::destroy_collection(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 				)?;
 			},
@@ -338,9 +338,9 @@ impl<
 					AccountIdOrCollectionNftTuple<T::AccountId>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::send(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					new_owner,
@@ -355,9 +355,9 @@ impl<
 					AccountIdOrCollectionNftTuple<T::AccountId>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::accept_nft(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					new_owner,
@@ -368,9 +368,9 @@ impl<
 				let mut env = env.buf_in_buf_out();
 				let (collection_id, nft_id): (T::CollectionId, T::ItemId) = env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::reject_nft(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 				)?;
@@ -382,9 +382,9 @@ impl<
 
 				let new_issuer = <T::Lookup as StaticLookup>::unlookup(new_issuer);
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::change_collection_issuer(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					new_issuer,
 				)?;
@@ -399,9 +399,9 @@ impl<
 					BoundedVec<u8, T::ValueLimit>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::set_property(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					maybe_nft_id,
 					key,
@@ -413,9 +413,9 @@ impl<
 				let mut env = env.buf_in_buf_out();
 				let collection_id: u32 = env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::lock_collection(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 				)?;
 			},
@@ -428,9 +428,9 @@ impl<
 					BasicResource<BoundedVec<u8, T::StringLimit>>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::add_basic_resource(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
@@ -448,9 +448,9 @@ impl<
 					>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::add_composable_resource(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
@@ -465,9 +465,9 @@ impl<
 					SlotResource<BoundedVec<u8, T::StringLimit>>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::add_slot_resource(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
@@ -479,9 +479,9 @@ impl<
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
 					env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::accept_resource(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
@@ -493,9 +493,9 @@ impl<
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
 					env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::remove_resource(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
@@ -507,9 +507,9 @@ impl<
 				let (collection_id, nft_id, resource_id): (T::CollectionId, T::ItemId, ResourceId) =
 					env.read_as()?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::accept_resource_removal(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
@@ -524,9 +524,9 @@ impl<
 					BoundedVec<ResourceId, T::MaxPriorities>,
 				) = env.read_as_unbounded(env.in_len())?;
 
-				let caller = env.ext().caller().clone();
+				let contract = env.ext().address().clone();
 				pallet_rmrk_core::Pallet::<T>::set_priority(
-					RawOrigin::Signed(caller).into(),
+					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					priorities,
