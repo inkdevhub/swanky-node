@@ -9,7 +9,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use codec::{Decode, Encode};
 use pallet_contracts::{
 	chain_extension::{
-		ChainExtension, RegisteredChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+		ChainExtension, Environment, Ext, InitState, RegisteredChainExtension, RetVal, SysConfig,
+		UncheckedFrom,
 	},
 	DefaultContractAccessWeight,
 };
@@ -316,7 +317,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
+	type ChainExtension = RmrkChainExtension; // (RmrkChainExtension, DappsStakingChainExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -469,23 +470,23 @@ pub struct BondStakeInput<AccountId, Balance> {
 	value: Balance,
 }
 
-#[derive(Default)]
-pub struct DappsStakingChainExtension;
+// #[derive(Default)]
+// pub struct DappsStakingChainExtension;
 
-impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
-	const ID: u16 = 34;
-}
+// impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
+// const ID: u16 = 34;
+// }
 
-impl ChainExtension<Runtime> for DappsStakingChainExtension {
-	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-	where
-		E: Ext<T = Runtime>,
-		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-	{
-		// DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
-		Ok(RetVal::Converging(0))
-	}
-}
+// impl ChainExtension<Runtime> for DappsStakingChainExtension {
+// fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+// where
+// E: Ext<T = Runtime>,
+// <E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+// {
+// // DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
+// Ok(RetVal::Converging(0))
+// }
+// }
 
 #[derive(Default)]
 pub struct RmrkChainExtension;

@@ -128,7 +128,7 @@ pub fn run() -> sc_cli::Result<()> {
 						cmd.run(config, client, db, storage)
 					},
 					BenchmarkCmd::Overhead(_) => Err("Benchmark overhead not supported.".into()),
-                	BenchmarkCmd::Extrinsic(_) => Err("Benchmark extrinsic not supported.".into()),
+					BenchmarkCmd::Extrinsic(_) => Err("Benchmark extrinsic not supported.".into()),
 					BenchmarkCmd::Machine(cmd) =>
 						cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()),
 				}

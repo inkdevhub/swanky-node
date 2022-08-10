@@ -3,7 +3,7 @@ members = [
 	"node",
 	"runtime",
 	"chainextensions/traits",
-	"chainextensions/rmrk/*"
+	"chainextensions/rmrk/*",
 ]
 exclude = [
 	"contracts",
