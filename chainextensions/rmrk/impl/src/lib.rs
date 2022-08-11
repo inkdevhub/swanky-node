@@ -303,6 +303,8 @@ impl<
 					"[RmrkExtension] create_result {:?}",
 					create_result
 				);}
+
+				return create_result
 			},
 
 			RmrkFunc::BurnNft => {
