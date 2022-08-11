@@ -304,7 +304,7 @@ impl<
 					create_result
 				);}
 
-				return create_result;
+				return create_result
 			},
 
 			RmrkFunc::BurnNft => {
