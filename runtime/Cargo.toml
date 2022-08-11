@@ -43,8 +43,12 @@ pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27", default-features = false }
 pallet-contracts-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.27", default-features = false }
 
+# astar-frame common
+chain-extension-trait = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.27", default-features = false }
+
 # dApps staking
 pallet-dapps-staking = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.27", default-features = false }
+dapps-staking-chain-extension = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.27", default-features = false }
 
 # RMRK specific
 chain-extension-traits = { path = "../chainextensions/traits", default-features = false }

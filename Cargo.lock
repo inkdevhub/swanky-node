@@ -692,6 +692,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "chain-extension-trait"
+version = "1.0.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.27#f1de0121845cfc3610bbda17fee88dd7f599dd44"
+dependencies = [
+ "pallet-contracts",
+ "sp-runtime",
+]
+
+[[package]]
 name = "chain-extension-traits"
 version = "4.0.0"
 dependencies = [
@@ -1133,6 +1142,40 @@ dependencies = [
  "rand_core 0.6.3",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "dapps-staking-chain-extension"
+version = "1.0.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.27#f1de0121845cfc3610bbda17fee88dd7f599dd44"
+dependencies = [
+ "chain-extension-trait",
+ "dapps-staking-chain-extension-types",
+ "frame-support",
+ "frame-system",
+ "log",
+ "num-traits",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "pallet-contracts-rpc-runtime-api",
+ "pallet-dapps-staking",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dapps-staking-chain-extension-types"
+version = "1.0.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.27#f1de0121845cfc3610bbda17fee88dd7f599dd44"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -4040,7 +4083,7 @@ dependencies = [
 [[package]]
 name = "pallet-dapps-staking"
 version = "3.6.1"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.27#3726147d0816d90866689c3c69d3442366d49787"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.27#f1de0121845cfc3610bbda17fee88dd7f599dd44"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7432,7 +7475,9 @@ dependencies = [
 name = "swanky-runtime"
 version = "0.7.0"
 dependencies = [
+ "chain-extension-trait",
  "chain-extension-traits",
+ "dapps-staking-chain-extension",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",

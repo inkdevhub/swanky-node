@@ -14,6 +14,8 @@ use pallet_contracts::{
 	},
 	DefaultContractAccessWeight,
 };
+pub use pallet_rmrk_core;
+
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
@@ -56,9 +58,10 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
-use chain_extension_traits::ChainExtensionExec;
+use chain_extension_trait::ChainExtensionExec;
+use chain_extension_traits::ChainExtensionExec as RmrkChainExtensionExec;
+use dapps_staking_chain_extension::DappsStakingExtension;
 use pallet_chain_extension_rmrk::RmrkExtension;
-pub use pallet_rmrk_core;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -317,7 +320,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = RmrkChainExtension; // (RmrkChainExtension, DappsStakingChainExtension);
+	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -470,27 +473,28 @@ pub struct BondStakeInput<AccountId, Balance> {
 	value: Balance,
 }
 
-// #[derive(Default)]
-// pub struct DappsStakingChainExtension;
+#[derive(Default)]
+pub struct DappsStakingChainExtension;
 
-// impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
-// const ID: u16 = 34;
-// }
+impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
+	const ID: u16 = 0;
+}
 
-// impl ChainExtension<Runtime> for DappsStakingChainExtension {
-// fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-// where
-// E: Ext<T = Runtime>,
-// <E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-// {
-// // DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
-// Ok(RetVal::Converging(0))
-// }
-// }
+impl ChainExtension<Runtime> for DappsStakingChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		E: Ext<T = Runtime>,
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)?;
+		Ok(RetVal::Converging(0))
+	}
+}
 
 #[derive(Default)]
 pub struct RmrkChainExtension;
 
+// Once DN hackathond finished, ID will be changed to 1.
 impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
 	const ID: u16 = 35;
 }
