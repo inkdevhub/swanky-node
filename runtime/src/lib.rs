@@ -496,9 +496,8 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 #[derive(Default)]
 pub struct RmrkChainExtension;
 
-// Once DN hackathond finished, ID will be changed to 0x0001.
 impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
-	const ID: u16 = 0x0023;
+	const ID: u16 = 0x0001;
 }
 
 impl ChainExtension<Runtime> for RmrkChainExtension {
