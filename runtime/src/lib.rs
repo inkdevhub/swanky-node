@@ -477,7 +477,7 @@ pub struct BondStakeInput<AccountId, Balance> {
 pub struct DappsStakingChainExtension;
 
 impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
-	const ID: u16 = 0;
+	const ID: u16 = 0x0000;
 }
 
 impl ChainExtension<Runtime> for DappsStakingChainExtension {
@@ -486,6 +486,8 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
+		frame_support::log::info!("EXT ID - {}", env.ext_id());
+		frame_support::log::info!("FUNC ID - {}", env.func_id());
 		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
@@ -494,9 +496,9 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 #[derive(Default)]
 pub struct RmrkChainExtension;
 
-// Once DN hackathond finished, ID will be changed to 1.
+// Once DN hackathond finished, ID will be changed to 0x0001.
 impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
-	const ID: u16 = 35;
+	const ID: u16 = 0x0023;
 }
 
 impl ChainExtension<Runtime> for RmrkChainExtension {
@@ -505,6 +507,8 @@ impl ChainExtension<Runtime> for RmrkChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
+		frame_support::log::info!("EXT ID - {}", env.ext_id());
+		frame_support::log::info!("FUNC ID - {}", env.func_id());
 		RmrkExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
