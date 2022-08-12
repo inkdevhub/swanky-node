@@ -1,6 +1,6 @@
 [package]
 name = "swanky-node"
-version = "0.7.1"
+version = "0.9.1"
 description = "Local Substrate node for wasm contract development & testing"
 authors = ["Astar Network"]
 homepage = "https://astar.network"
@@ -60,7 +60,7 @@ frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/parityte
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 
 # Local Dependencies
-swanky-runtime = { version = "0.7.1", path = "../runtime" }
+swanky-runtime = { version = "0.9.1", path = "../runtime" }
 
 # RPC related dependencies
 jsonrpsee = { version = "0.14.0", features = ["server"] }
