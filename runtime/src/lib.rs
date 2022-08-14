@@ -22,7 +22,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	AccountId32, ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -347,7 +347,7 @@ parameter_types! {
 impl pallet_dapps_staking::Config for Runtime {
 	type Currency = Balances;
 	type BlockPerEra = BlockPerEra;
-	type SmartContract = SmartContract;
+	type SmartContract = SmartContract<AccountId>;
 	type RegisterDeposit = RegisterDeposit;
 	type Event = Event;
 	type WeightInfo = weights::pallet_dapps_staking::WeightInfo<Runtime>;
@@ -432,22 +432,20 @@ impl pallet_uniques::Config for Runtime {
 	type WeightInfo = ();
 }
 
-const DEFAULT_ACCOUNT: AccountId = AccountId32::new([0; 32]);
-
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
-pub enum SmartContract {
+pub enum SmartContract<AccountId: From<[u8; 32]>> {
 	/// Wasm smart contract instance.
 	Wasm(AccountId),
 }
 
-impl Default for SmartContract {
+impl<AccountId: From<[u8; 32]>> Default for SmartContract<AccountId> {
 	fn default() -> Self {
-		SmartContract::Wasm(DEFAULT_ACCOUNT)
+		SmartContract::Wasm([0; 32].into())
 	}
 }
 
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl pallet_dapps_staking::IsContract for SmartContract {
+impl<AccountId: From<[u8; 32]>> pallet_dapps_staking::IsContract for SmartContract<AccountId> {
 	fn is_valid(&self) -> bool {
 		match self {
 			// temporarilly no AccountId validation.
@@ -486,8 +484,6 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		frame_support::log::info!("EXT ID - {}", env.ext_id());
-		frame_support::log::info!("FUNC ID - {}", env.func_id());
 		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
@@ -506,8 +502,6 @@ impl ChainExtension<Runtime> for RmrkChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		frame_support::log::info!("EXT ID - {}", env.ext_id());
-		frame_support::log::info!("FUNC ID - {}", env.func_id());
 		RmrkExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
