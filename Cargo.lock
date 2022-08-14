@@ -7429,7 +7429,7 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "swanky-node"
-version = "0.7.0"
+version = "0.9.1"
 dependencies = [
  "clap",
  "frame-benchmarking",
@@ -7473,7 +7473,7 @@ dependencies = [
 
 [[package]]
 name = "swanky-runtime"
-version = "0.7.0"
+version = "0.9.1"
 dependencies = [
  "chain-extension-trait",
  "chain-extension-traits",
