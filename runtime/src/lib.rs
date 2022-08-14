@@ -434,6 +434,7 @@ impl pallet_uniques::Config for Runtime {
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
 pub enum SmartContract<AccountId: From<[u8; 32]>> {
+	Evm,
 	/// Wasm smart contract instance.
 	Wasm(AccountId),
 }
@@ -451,6 +452,7 @@ impl<AccountId: From<[u8; 32]>> pallet_dapps_staking::IsContract for SmartContra
 			// temporarilly no AccountId validation.
 			// we want getter function here, so that we can check the existence of contract by
 			// AccountId. https://github.com/paritytech/substrate/blob/7a28c62246406839b746af2201309d0ed9a3f526/frame/contracts/src/lib.rs#L792
+			SmartContract::Evm => false,
 			SmartContract::Wasm(_account) => true,
 		}
 	}
