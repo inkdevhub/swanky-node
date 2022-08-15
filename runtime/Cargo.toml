@@ -51,7 +51,6 @@ dapps-staking-chain-extension = { git = "https://github.com/AstarNetwork/astar-f
 pallet-dapps-staking = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.27", default-features = false }
 
 # RMRK specific
-chain-extension-traits = { path = "../chainextensions/traits", default-features = false }
 pallet-chain-extension-rmrk = { path = "../chainextensions/rmrk/impl", default-features = false }
 pallet-rmrk-core = { version = "0.0.1", git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.27", default-features = false }
 pallet-rmrk-equip = { version = "0.0.1", git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.27", default-features = false }

@@ -2,7 +2,7 @@
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 
-use chain_extension_traits::ChainExtensionExec;
+use chain_extension_trait::ChainExtensionExec;
 
 use codec::Encode;
 use frame_support::BoundedVec;
