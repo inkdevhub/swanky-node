@@ -17,7 +17,7 @@ use pallet_contracts::{
 pub use pallet_rmrk_core;
 
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, H160, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
