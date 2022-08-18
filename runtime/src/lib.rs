@@ -9,17 +9,20 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use codec::{Decode, Encode};
 use pallet_contracts::{
 	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+		ChainExtension, Environment, Ext, InitState, RegisteredChainExtension, RetVal, SysConfig,
+		UncheckedFrom,
 	},
 	DefaultContractAccessWeight,
 };
+pub use pallet_rmrk_core;
+
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	AccountId32, ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -55,9 +58,9 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
-use chain_extension_traits::ChainExtensionExec;
+use chain_extension_trait::ChainExtensionExec;
+use dapps_staking_chain_extension::DappsStakingExtension;
 use pallet_chain_extension_rmrk::RmrkExtension;
-pub use pallet_rmrk_core;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -316,7 +319,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = LocalChainExtension;
+	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -343,7 +346,7 @@ parameter_types! {
 impl pallet_dapps_staking::Config for Runtime {
 	type Currency = Balances;
 	type BlockPerEra = BlockPerEra;
-	type SmartContract = SmartContract;
+	type SmartContract = SmartContract<AccountId>;
 	type RegisterDeposit = RegisterDeposit;
 	type Event = Event;
 	type WeightInfo = weights::pallet_dapps_staking::WeightInfo<Runtime>;
@@ -428,37 +431,35 @@ impl pallet_uniques::Config for Runtime {
 	type WeightInfo = ();
 }
 
-const DEFAULT_ACCOUNT: AccountId = AccountId32::new([0; 32]);
-
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
-pub enum SmartContract {
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
+pub enum SmartContract<AccountId> {
+	/// EVM smart contract instance.
+	Evm(sp_core::H160),
 	/// Wasm smart contract instance.
 	Wasm(AccountId),
 }
 
-impl Default for SmartContract {
+impl<AccountId> Default for SmartContract<AccountId> {
 	fn default() -> Self {
-		SmartContract::Wasm(DEFAULT_ACCOUNT)
+		SmartContract::Evm(H160::repeat_byte(0x00))
 	}
 }
-
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl pallet_dapps_staking::IsContract for SmartContract {
+impl<AccountId> pallet_dapps_staking::IsContract for SmartContract<AccountId> {
 	fn is_valid(&self) -> bool {
 		match self {
-			// temporarilly no AccountId validation.
-			// we want getter function here, so that we can check the existence of contract by
-			// AccountId. https://github.com/paritytech/substrate/blob/7a28c62246406839b746af2201309d0ed9a3f526/frame/contracts/src/lib.rs#L792
 			SmartContract::Wasm(_account) => true,
+			SmartContract::Evm(_account) => true,
 		}
 	}
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl pallet_dapps_staking::IsContract for SmartContract {
+impl<AccountId> pallet_dapps_staking::IsContract for SmartContract<AccountId> {
 	fn is_valid(&self) -> bool {
 		match self {
 			SmartContract::Wasm(_account) => true,
+			SmartContract::Evm(_account) => true,
 		}
 	}
 }
@@ -469,42 +470,38 @@ pub struct BondStakeInput<AccountId, Balance> {
 	value: Balance,
 }
 
-/// Contract extension for Local Chain-Extension
-pub struct LocalChainExtension;
+#[derive(Default)]
+pub struct DappsStakingChainExtension;
 
-enum ExtensionId {
-	// DappsStaking = 34,
-	Rmrk = 35,
+impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
+	const ID: u16 = 0x0000;
 }
 
-impl TryFrom<u32> for ExtensionId {
-	type Error = DispatchError;
-
-	fn try_from(value: u32) -> Result<Self, Self::Error> {
-		match value {
-			// 34 => return Ok(ExtensionId::DappsStaking),
-			35 => return Ok(ExtensionId::Rmrk),
-			_ => return Err(DispatchError::Other("Unimplemented ChainExtension pallet")),
-		}
-	}
-}
-
-impl ChainExtension<Runtime> for LocalChainExtension {
-	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+impl ChainExtension<Runtime> for DappsStakingChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
 	where
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		let pallet_id = ExtensionId::try_from(func_id / 100)?;
-		let func_id_matcher = func_id % 100;
-		match pallet_id {
-			// ExtensionId::DappsStaking => {
-			//     DappsStakingExtension::execute_func::<E>(func_id_matcher, env)?;
-			// }
-			ExtensionId::Rmrk => {
-				RmrkExtension::execute_func::<E>(func_id_matcher, env)?;
-			},
-		}
+		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)?;
+		Ok(RetVal::Converging(0))
+	}
+}
+
+#[derive(Default)]
+pub struct RmrkChainExtension;
+
+impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
+	const ID: u16 = 0x0001;
+}
+
+impl ChainExtension<Runtime> for RmrkChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		E: Ext<T = Runtime>,
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		RmrkExtension::execute_func::<E>(env.func_id().into(), env)?;
 		Ok(RetVal::Converging(0))
 	}
 }

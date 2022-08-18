@@ -1,41 +1,41 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-
-use sp_runtime::DispatchError;
+use codec::{Decode, Encode};
+use sp_runtime::{DispatchError, ModuleError};
 
 pub enum RmrkFunc {
 	// getters
-	NextNftId = 1,
-	CollectionIndex = 2,
-	NextResourceId = 3,
-	Collections = 4,
-	Nfts = 5,
-	Priorities = 6,
-	Children = 7,
-	Resources = 8,
-	EquippableBases = 9,
-	EquippableSlots = 10,
-	Properties = 11,
-	Lock = 12,
+	NextNftId,
+	CollectionIndex,
+	NextResourceId,
+	Collections,
+	Nfts,
+	Priorities,
+	Children,
+	Resources,
+	EquippableBases,
+	EquippableSlots,
+	Properties,
+	Lock,
 
 	// extrinsics
-	MintNft = 13,
-	MintNftDirectlyToNft = 14,
-	CreateCollection = 15,
-	BurnNft = 16,
-	DestroyCollection = 17,
-	Send = 18,
-	AcceptNft = 19,
-	RejectNft = 20,
-	ChangeCollectionIssuer = 21,
-	SetProperty = 22,
-	LockCollection = 23,
-	AddBasicResource = 24,
-	AddComposableResource = 25,
-	AddSlotResource = 26,
-	AcceptResource = 27,
-	RemoveResource = 28,
-	AcceptResourceRemoval = 29,
-	SetPriority = 30,
+	MintNft,
+	MintNftDirectlyToNft,
+	CreateCollection,
+	BurnNft,
+	DestroyCollection,
+	Send,
+	AcceptNft,
+	RejectNft,
+	ChangeCollectionIssuer,
+	SetProperty,
+	LockCollection,
+	AddBasicResource,
+	AddComposableResource,
+	AddSlotResource,
+	AcceptResource,
+	RemoveResource,
+	AcceptResourceRemoval,
+	SetPriority,
 }
 
 impl TryFrom<u32> for RmrkFunc {
@@ -44,39 +44,117 @@ impl TryFrom<u32> for RmrkFunc {
 	fn try_from(value: u32) -> Result<Self, Self::Error> {
 		return match value {
 			// getters
-			1 => Ok(RmrkFunc::NextNftId),
-			2 => Ok(RmrkFunc::CollectionIndex),
-			3 => Ok(RmrkFunc::NextResourceId),
-			4 => Ok(RmrkFunc::Collections),
-			5 => Ok(RmrkFunc::Nfts),
-			6 => Ok(RmrkFunc::Priorities),
-			7 => Ok(RmrkFunc::Children),
-			8 => Ok(RmrkFunc::Resources),
-			9 => Ok(RmrkFunc::EquippableBases),
-			10 => Ok(RmrkFunc::EquippableSlots),
-			11 => Ok(RmrkFunc::Properties),
-			12 => Ok(RmrkFunc::Lock),
+			0x0001 => Ok(RmrkFunc::NextNftId),
+			0x0002 => Ok(RmrkFunc::CollectionIndex),
+			0x0003 => Ok(RmrkFunc::NextResourceId),
+			0x0004 => Ok(RmrkFunc::Collections),
+			0x0005 => Ok(RmrkFunc::Nfts),
+			0x0006 => Ok(RmrkFunc::Priorities),
+			0x0007 => Ok(RmrkFunc::Children),
+			0x0008 => Ok(RmrkFunc::Resources),
+			0x0009 => Ok(RmrkFunc::EquippableBases),
+			0x000A => Ok(RmrkFunc::EquippableSlots),
+			0x000B => Ok(RmrkFunc::Properties),
+			0x000C => Ok(RmrkFunc::Lock),
 
 			// extrinsics
-			13 => Ok(RmrkFunc::MintNft),
-			14 => Ok(RmrkFunc::MintNftDirectlyToNft),
-			15 => Ok(RmrkFunc::CreateCollection),
-			16 => Ok(RmrkFunc::BurnNft),
-			17 => Ok(RmrkFunc::DestroyCollection),
-			18 => Ok(RmrkFunc::Send),
-			19 => Ok(RmrkFunc::AcceptNft),
-			20 => Ok(RmrkFunc::RejectNft),
-			21 => Ok(RmrkFunc::ChangeCollectionIssuer),
-			22 => Ok(RmrkFunc::SetProperty),
-			23 => Ok(RmrkFunc::LockCollection),
-			24 => Ok(RmrkFunc::AddBasicResource),
-			25 => Ok(RmrkFunc::AddComposableResource),
-			26 => Ok(RmrkFunc::AddSlotResource),
-			27 => Ok(RmrkFunc::AcceptResource),
-			28 => Ok(RmrkFunc::RemoveResource),
-			29 => Ok(RmrkFunc::AcceptResourceRemoval),
-			30 => Ok(RmrkFunc::SetPriority),
+			0x000D => Ok(RmrkFunc::MintNft),
+			0x000E => Ok(RmrkFunc::MintNftDirectlyToNft),
+			0x000F => Ok(RmrkFunc::CreateCollection),
+			0x0010 => Ok(RmrkFunc::BurnNft),
+			0x0011 => Ok(RmrkFunc::DestroyCollection),
+			0x0012 => Ok(RmrkFunc::Send),
+			0x0013 => Ok(RmrkFunc::AcceptNft),
+			0x0014 => Ok(RmrkFunc::RejectNft),
+			0x0015 => Ok(RmrkFunc::ChangeCollectionIssuer),
+			0x0016 => Ok(RmrkFunc::SetProperty),
+			0x0017 => Ok(RmrkFunc::LockCollection),
+			0x0018 => Ok(RmrkFunc::AddBasicResource),
+			0x0019 => Ok(RmrkFunc::AddComposableResource),
+			0x001A => Ok(RmrkFunc::AddSlotResource),
+			0x001B => Ok(RmrkFunc::AcceptResource),
+			0x001C => Ok(RmrkFunc::RemoveResource),
+			0x001D => Ok(RmrkFunc::AcceptResourceRemoval),
+			0x001E => Ok(RmrkFunc::SetPriority),
 			_ => Err(DispatchError::Other("RmrkExtension: Unimplemented func_id")),
+		}
+	}
+}
+
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
+pub enum RmrkError {
+	/// Error names should be descriptive.
+	NoneValue,
+	/// Errors should have helpful documentation associated with them.
+	StorageOverflow,
+	TooLong,
+	NoAvailableCollectionId,
+	NoAvailableResourceId,
+	MetadataNotSet,
+	RecipientNotSet,
+	NoAvailableNftId,
+	NotInRange,
+	RoyaltyNotSet,
+	CollectionUnknown,
+	NoPermission,
+	NoWitness,
+	CollectionNotEmpty,
+	CollectionFullOrLocked,
+	CannotSendToDescendentOrSelf,
+	ResourceAlreadyExists,
+	EmptyResource,
+	TooManyRecursions,
+	NftIsLocked,
+	CannotAcceptNonOwnedNft,
+	CannotRejectNonOwnedNft,
+	CannotRejectNonPendingNft,
+	ResourceDoesntExist,
+	/// Accepting a resource that is not pending should fail
+	ResourceNotPending,
+	NonTransferable,
+	// Must unequip an item before sending (this only applies to the
+	// rmrk-equip pallet but the send operation lives in rmrk-core)
+	CannotSendEquippedItem,
+}
+
+impl TryFrom<DispatchError> for RmrkError {
+	type Error = DispatchError;
+
+	fn try_from(input: DispatchError) -> Result<Self, Self::Error> {
+		let error_text = match input {
+			DispatchError::Module(ModuleError { message, .. }) => message,
+			_ => Some("No module error Info"),
+		};
+		match error_text {
+			Some("NoneValue") => Ok(RmrkError::NoneValue),
+			Some("StorageOverflow") => Ok(RmrkError::StorageOverflow),
+			Some("TooLong") => Ok(RmrkError::TooLong),
+			Some("NoAvailableCollectionId") => Ok(RmrkError::NoAvailableCollectionId),
+			Some("NoAvailableResourceId") => Ok(RmrkError::NoAvailableResourceId),
+			Some("MetadataNotSet") => Ok(RmrkError::MetadataNotSet),
+			Some("RecipientNotSet") => Ok(RmrkError::RecipientNotSet),
+			Some("NoAvailableNftId") => Ok(RmrkError::NoAvailableNftId),
+			Some("NotInRange") => Ok(RmrkError::NotInRange),
+			Some("RoyaltyNotSet") => Ok(RmrkError::RoyaltyNotSet),
+			Some("CollectionUnknown") => Ok(RmrkError::CollectionUnknown),
+			Some("NoPermission") => Ok(RmrkError::NoPermission),
+			Some("NoWitness") => Ok(RmrkError::NoWitness),
+			Some("CollectionNotEmpty") => Ok(RmrkError::CollectionNotEmpty),
+			Some("CollectionFullOrLocked") => Ok(RmrkError::CollectionFullOrLocked),
+			Some("CannotSendToDescendentOrSelf") => Ok(RmrkError::CannotSendToDescendentOrSelf),
+			Some("ResourceAlreadyExists") => Ok(RmrkError::ResourceAlreadyExists),
+			Some("EmptyResource") => Ok(RmrkError::EmptyResource),
+			Some("TooManyRecursions") => Ok(RmrkError::TooManyRecursions),
+			Some("NftIsLocked") => Ok(RmrkError::NftIsLocked),
+			Some("CannotAcceptNonOwnedNft") => Ok(RmrkError::CannotAcceptNonOwnedNft),
+			Some("CannotRejectNonOwnedNft") => Ok(RmrkError::CannotRejectNonOwnedNft),
+			Some("CannotRejectNonPendingNft") => Ok(RmrkError::CannotRejectNonPendingNft),
+			Some("ResourceDoesntExist") => Ok(RmrkError::ResourceDoesntExist),
+			Some("ResourceNotPending") => Ok(RmrkError::ResourceNotPending),
+			Some("NonTransferable") => Ok(RmrkError::NonTransferable),
+			Some("CannotSendEquippedItem") => Ok(RmrkError::CannotSendEquippedItem),
+			_ => Err(DispatchError::Other("RmrkExtension: Unknown error")),
 		}
 	}
 }

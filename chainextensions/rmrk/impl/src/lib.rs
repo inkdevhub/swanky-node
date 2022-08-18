@@ -2,14 +2,14 @@
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 
-use chain_extension_traits::ChainExtensionExec;
+use chain_extension_trait::ChainExtensionExec;
 
 use codec::Encode;
 use frame_support::BoundedVec;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, UncheckedFrom};
 use pallet_rmrk_core::BoundedResourceTypeOf;
-use rmrk_chain_extension_types::RmrkFunc;
+use rmrk_chain_extension_types::{RmrkError, RmrkFunc};
 use rmrk_traits::{
 	primitives::{BaseId, CollectionId, NftId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, ComposableResource, SlotResource,
@@ -31,6 +31,7 @@ impl<
 		let func_id = RmrkFunc::try_from(func_id)?;
 
 		match func_id {
+			// READ functions
 			RmrkFunc::NextNftId => {
 				let mut env = env.buf_in_buf_out();
 				let collection_id: u32 = env.read_as()?;
@@ -213,6 +214,7 @@ impl<
 				})?;
 			},
 
+			// WRITE functions
 			RmrkFunc::MintNft => {
 				let mut env = env.buf_in_buf_out();
 				let (
@@ -234,7 +236,7 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::mint_nft(
+				let result = pallet_rmrk_core::Pallet::<T>::mint_nft(
 					RawOrigin::Signed(contract).into(),
 					Some(owner.clone()),
 					collection_id,
@@ -243,7 +245,29 @@ impl<
 					metadata.try_into().unwrap(),
 					transferable,
 					resources,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension MinfNft failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension MintNft failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::MintNftDirectlyToNft => {
@@ -267,7 +291,7 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::mint_nft_directly_to_nft(
+				let result = pallet_rmrk_core::Pallet::<T>::mint_nft_directly_to_nft(
 					RawOrigin::Signed(contract).into(),
 					owner,
 					collection_id,
@@ -276,7 +300,25 @@ impl<
 					metadata.try_into().unwrap(),
 					transferable,
 					resources,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension MintNftDirectlyToNft failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension MintNftDirectlyToNft failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::CreateCollection => {
@@ -293,7 +335,7 @@ impl<
 					"[RmrkExtension] create_collection metadata{:?}, symbol{:?}, caller{:?}, weight {:?}",
 					metadata, symbol, contract, weight
 				);}
-				let create_result = pallet_rmrk_core::Pallet::<T>::create_collection(
+				let result = pallet_rmrk_core::Pallet::<T>::create_collection(
 					RawOrigin::Signed(contract).into(),
 					metadata.try_into().unwrap(),
 					max,
@@ -301,10 +343,26 @@ impl<
 				);
 				sp_std::if_std! {println!(
 					"[RmrkExtension] create_result {:?}",
-					create_result
+					result
 				);}
 
-				return create_result
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension CreateCollection failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension CreateCollection failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::BurnNft => {
@@ -313,12 +371,34 @@ impl<
 					env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::burn_nft(
+				let result = pallet_rmrk_core::Pallet::<T>::burn_nft(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					max_burns,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension BurnNft failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension BurnNft failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::DestroyCollection => {
@@ -326,10 +406,28 @@ impl<
 				let collection_id: u32 = env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::destroy_collection(
+				let result = pallet_rmrk_core::Pallet::<T>::destroy_collection(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension DestroyCollection failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension DestroyCollection failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::Send => {
@@ -341,12 +439,34 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::send(
+				let result = pallet_rmrk_core::Pallet::<T>::send(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					new_owner,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension Send failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension Send failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AcceptNft => {
@@ -358,12 +478,34 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::accept_nft(
+				let result = pallet_rmrk_core::Pallet::<T>::accept_nft(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					new_owner,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension AcceptNft failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension AcceptNft failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::RejectNft => {
@@ -371,11 +513,33 @@ impl<
 				let (collection_id, nft_id): (T::CollectionId, T::ItemId) = env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::reject_nft(
+				let result = pallet_rmrk_core::Pallet::<T>::reject_nft(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension RejectNft failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension RejectNft failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::ChangeCollectionIssuer => {
@@ -385,11 +549,29 @@ impl<
 				let new_issuer = <T::Lookup as StaticLookup>::unlookup(new_issuer);
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::change_collection_issuer(
+				let result = pallet_rmrk_core::Pallet::<T>::change_collection_issuer(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					new_issuer,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension ChangeCollectionIssuer failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension ChangeCollectionIssuer failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::SetProperty => {
@@ -402,13 +584,35 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::set_property(
+				let result = pallet_rmrk_core::Pallet::<T>::set_property(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					maybe_nft_id,
 					key,
 					value,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension SetProperty failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension SetProperty failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::LockCollection => {
@@ -416,10 +620,28 @@ impl<
 				let collection_id: u32 = env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::lock_collection(
+				let result = pallet_rmrk_core::Pallet::<T>::lock_collection(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension LockCollection failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension LockCollection failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AddBasicResource => {
@@ -431,12 +653,30 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::add_basic_resource(
+				let result = pallet_rmrk_core::Pallet::<T>::add_basic_resource(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddBasicResource failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddBasicResource failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AddComposableResource => {
@@ -451,12 +691,30 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::add_composable_resource(
+				let result = pallet_rmrk_core::Pallet::<T>::add_composable_resource(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddComposableResource failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddComposableResource failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AddSlotResource => {
@@ -468,12 +726,30 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::add_slot_resource(
+				let result = pallet_rmrk_core::Pallet::<T>::add_slot_resource(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddSlotResource failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AddSlotResource failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AcceptResource => {
@@ -482,12 +758,30 @@ impl<
 					env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::accept_resource(
+				let result = pallet_rmrk_core::Pallet::<T>::accept_resource(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResource failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResource failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::RemoveResource => {
@@ -496,12 +790,30 @@ impl<
 					env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::remove_resource(
+				let result = pallet_rmrk_core::Pallet::<T>::remove_resource(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension RemoveResource failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension RemoveResource failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::AcceptResourceRemoval => {
@@ -510,12 +822,30 @@ impl<
 					env.read_as()?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::accept_resource_removal(
+				let result = pallet_rmrk_core::Pallet::<T>::accept_resource_removal(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					resource_id,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResourceRemoval failed to write result")
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResourceRemoval failed to write result")
+						})?;
+						Err(e)
+					},
+				}
 			},
 
 			RmrkFunc::SetPriority => {
@@ -527,12 +857,34 @@ impl<
 				) = env.read_as_unbounded(env.in_len())?;
 
 				let contract = env.ext().address().clone();
-				pallet_rmrk_core::Pallet::<T>::set_priority(
+				let result = pallet_rmrk_core::Pallet::<T>::set_priority(
 					RawOrigin::Signed(contract).into(),
 					collection_id,
 					nft_id,
 					priorities,
-				)?;
+				);
+
+				return match result {
+					Ok(_) => {
+						let res = Result::<(), RmrkError>::Ok(());
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension SetPriority failed to write result",
+							)
+						})?;
+						Ok(())
+					},
+					Err(e) => {
+						let mapped_error = RmrkError::try_from(e)?;
+						let res = Result::<(), RmrkError>::Err(mapped_error);
+						env.write(&res.encode(), false, None).map_err(|_| {
+							DispatchError::Other(
+								"[ChainExtension] RmrkExtension SetPriority failed to write result",
+							)
+						})?;
+						Err(e)
+					},
+				}
 			},
 		}
 
