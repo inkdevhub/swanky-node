@@ -5,7 +5,6 @@ use futures::prelude::*;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
-use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::TransactionPool;
 use std::sync::Arc;
 use swanky_runtime::{self, opaque::Block, RuntimeApi};
@@ -43,24 +42,13 @@ pub fn new_partial(
 		FullSelectChain,
 		sc_consensus::DefaultImportQueue<Block, FullClient>,
 		sc_transaction_pool::FullPool<Block, FullClient>,
-		(Option<Telemetry>,),
+		(),
 	>,
 	ServiceError,
 > {
 	if config.keystore_remote.is_some() {
 		return Err(ServiceError::Other("Remote Keystores are not supported.".into()))
 	}
-
-	let telemetry = config
-		.telemetry_endpoints
-		.clone()
-		.filter(|x| !x.is_empty())
-		.map(|endpoints| -> Result<_, sc_telemetry::Error> {
-			let worker = TelemetryWorker::new(16)?;
-			let telemetry = worker.handle().new_telemetry(endpoints);
-			Ok((worker, telemetry))
-		})
-		.transpose()?;
 
 	let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
 		config.wasm_method,
@@ -72,15 +60,10 @@ pub fn new_partial(
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
 			&config,
-			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+			None,
 			executor,
 		)?;
 	let client = Arc::new(client);
-
-	let telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager.spawn_handle().spawn("telemetry", None, worker.run());
-		telemetry
-	});
 
 	let select_chain = sc_consensus::LongestChain::new(backend.clone());
 
@@ -106,7 +89,7 @@ pub fn new_partial(
 		keystore_container,
 		select_chain,
 		transaction_pool,
-		other: (telemetry,),
+		other: (),
 	})
 }
 
@@ -127,7 +110,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		mut keystore_container,
 		select_chain,
 		transaction_pool,
-		other: (mut telemetry,),
+		other: (),
 	} = new_partial(&config)?;
 
 	if let Some(url) = &config.keystore_remote {
@@ -189,7 +172,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		backend,
 		system_rpc_tx,
 		config,
-		telemetry: telemetry.as_mut(),
+		telemetry: None,
 	})?;
 
 	let proposer = sc_basic_authorship::ProposerFactory::new(
@@ -197,7 +180,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		client.clone(),
 		transaction_pool.clone(),
 		prometheus_registry.as_ref(),
-		telemetry.as_ref().map(|x| x.handle()),
+		None,
 	);
 
 	let pool_import_commands_stream =
