@@ -70,7 +70,7 @@ pub fn new_partial(
 	let transaction_pool = sc_transaction_pool::BasicPool::new_full(
 		config.transaction_pool.clone(),
 		config.role.is_authority().into(),
-		config.prometheus_registry(),
+		None,
 		task_manager.spawn_essential_handle(),
 		client.clone(),
 	);
@@ -78,7 +78,7 @@ pub fn new_partial(
 	let import_queue = sc_consensus_manual_seal::import_queue(
 		Box::new(client.clone()),
 		&task_manager.spawn_essential_handle(),
-		config.prometheus_registry(),
+		None,
 	);
 
 	Ok(sc_service::PartialComponents {
@@ -144,7 +144,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		);
 	}
 
-	let prometheus_registry = config.prometheus_registry().cloned();
 	let (rpc_command_sink, rpc_commands_stream) = futures::channel::mpsc::channel(1000);
 
 	let rpc_extensions_builder = {
@@ -179,7 +178,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		task_manager.spawn_handle(),
 		client.clone(),
 		transaction_pool.clone(),
-		prometheus_registry.as_ref(),
+		None,
 		None,
 	);
 
