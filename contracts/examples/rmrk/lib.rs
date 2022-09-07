@@ -18,18 +18,8 @@ mod rmrk {
 
 		// READ functions
 		#[ink(message)]
-		pub fn next_nft_id(&self, collection_id: CollectionId) -> NftId {
-			Rmrk::next_nft_id(collection_id)
-		}
-
-		#[ink(message)]
 		pub fn collection_index(&self) -> CollectionId {
             Rmrk::collection_index()
-		}
-
-		#[ink(message)]
-		pub fn next_resource_id(&self, collection_id: CollectionId, nft_id: NftId) -> ResourceId {
-            Rmrk::next_resource_id(collection_id, nft_id)
 		}
 
 		#[ink(message)]
@@ -123,15 +113,17 @@ mod rmrk {
 		pub fn mint_ntf(
 		    &mut self,
 		    owner: AccountId,
+			nft_id: NftId,
 		    collection_id: CollectionId,
 		    royalty_recipient: Option<AccountId>,
 		    royalty: Option<u32>,
 		    metadata: Vec<u8>,
 		    transferable: bool,
-		    resources: Option<Vec<ResourceTypes>>,
+		    resources: Option<Vec<ResourceInfoMin>>,
 		) -> Result<(), RmrkError> {
             Rmrk::mint_nft(
                 owner,
+				nft_id,
                 collection_id,
                 royalty_recipient,
                 royalty,
@@ -145,15 +137,17 @@ mod rmrk {
 		pub fn mint_ntf_directly_to_nft(
 		    &mut self,
 		    owner: (CollectionId, NftId),
+			nft_id: NftId,
 		    collection_id: CollectionId,
 		    royalty_recipient: Option<AccountId>,
 		    royalty: Option<u32>,
 		    metadata: Vec<u8>,
 		    transferable: bool,
-		    resources: Option<Vec<ResourceTypes>>,
+		    resources: Option<Vec<ResourceInfoMin>>,
 		) -> Result<(), RmrkError> {
             Rmrk::mint_nft_directly_to_nft(
                 owner,
+				nft_id,
                 collection_id,
                 royalty_recipient,
                 royalty,
@@ -269,11 +263,13 @@ mod rmrk {
 		    collection_id: CollectionId,
 		    nft_id: NftId,
 		    resource: BasicResource,
+			resource_id: ResourceId,
 		) -> Result<(), RmrkError> {
             Rmrk::add_basic_resource(
                 collection_id,
                 nft_id,
                 resource,
+				resource_id,
             )
 		}
 
@@ -283,11 +279,13 @@ mod rmrk {
 		    collection_id: CollectionId,
 		    nft_id: NftId,
 		    resource: ComposableResource,
+			resource_id: ResourceId,
 		) -> Result<(), RmrkError> {
             Rmrk::add_composable_resource(
                 collection_id,
                 nft_id,
                 resource,
+				resource_id,
             )
 		}
 
@@ -297,11 +295,13 @@ mod rmrk {
 		    collection_id: CollectionId,
 		    nft_id: NftId,
 		    resource: SlotResource,
+			resource_id: ResourceId,
 		) -> Result<(), RmrkError> {
             Rmrk::add_slot_resource(
                 collection_id,
                 nft_id,
                 resource,
+				resource_id,
             )
 		}
 

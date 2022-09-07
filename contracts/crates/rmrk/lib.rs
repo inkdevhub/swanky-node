@@ -91,6 +91,13 @@ pub struct ResourceInfo {
 
 #[derive(PartialEq, Debug, Eq, Clone, Encode, Decode)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+pub struct ResourceInfoMin {
+    pub id: ResourceId,
+    pub resource: ResourceTypes,
+}
+
+#[derive(PartialEq, Debug, Eq, Clone, Encode, Decode)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum ResourceTypes {
 	Basic(BasicResource),
 	Composable(ComposableResource),
@@ -124,22 +131,6 @@ pub struct ComposableResource {
 
 	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
 	pub slot: Option<(BaseId, SlotId)>,
-
-	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
-	/// The baseslot will be composed of two dot-delimited values, like so:
-	/// "base-4477293-kanaria_superbird.machine_gun_scope". This means: "This resource is
-	/// compatible with the machine_gun_scope slot of base base-4477293-kanaria_superbird
-
-	/// Optional location or identier of license
-	pub license: Option<Vec<u8>>,
-
-	/// If the resource has the thumb property, this will be a URI to a thumbnail of the given
-	/// resource. For example, if we have a composable NFT like a Kanaria bird, the resource is
-	/// complex and too detailed to show in a search-results page or a list. Also, if a bird owns
-	/// another bird, showing the full render of one bird inside the other's inventory might be a
-	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
-	/// image that is lighter and faster to load but representative of this resource.
-	pub thumb: Option<Vec<u8>>,
 }
 
 #[derive(PartialEq, Debug, Eq, Clone, Encode, Decode)]
@@ -162,49 +153,22 @@ pub struct SlotResource {
 	/// "base-4477293-kanaria_superbird.machine_gun_scope". This means: "This resource is
 	/// compatible with the machine_gun_scope slot of base base-4477293-kanaria_superbird
 	pub slot: SlotId,
-
-	/// The license field, if present, should contain a link to a license (IPFS or static HTTP
-	/// url), or an identifier, like RMRK_nocopy or ipfs://ipfs/someHashOfLicense.
-	pub license: Option<Vec<u8>>,
-
-	/// If the resource has the thumb property, this will be a URI to a thumbnail of the given
-	/// resource. For example, if we have a composable NFT like a Kanaria bird, the resource is
-	/// complex and too detailed to show in a search-results page or a list. Also, if a bird owns
-	/// another bird, showing the full render of one bird inside the other's inventory might be a
-	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
-	/// image that is lighter and faster to load but representative of this resource.
-	pub thumb: Option<Vec<u8>>,
 }
 
 pub struct Rmrk;
 
 impl Rmrk {
-    pub fn next_nft_id(collection_id: CollectionId) -> NftId {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010001)
-            .input::<CollectionId>()
-            .output::<NftId>()
-            .ignore_error_code()
-            .call(&collection_id)
-    }
-
+    // read
     pub fn collection_index() -> CollectionId {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010002)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010001)
             .input::<()>()
             .output::<CollectionId>()
             .ignore_error_code()
             .call(&())
     }
 
-    pub fn next_resource_id(collection_id: CollectionId, nft_id: NftId) -> ResourceId {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010003)
-            .input::<(CollectionId, NftId)>()
-            .output::<ResourceId>()
-            .ignore_error_code()
-            .call(&(collection_id, nft_id))
-    }
-
     pub fn collections(collection_id: CollectionId) -> Option<CollectionInfo> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010004)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010002)
             .input::<CollectionId>()
             .output::<Option<CollectionInfo>>()
             .ignore_error_code()
@@ -212,7 +176,7 @@ impl Rmrk {
     }
 
     pub fn nfts(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010005)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010003)
             .input::<(CollectionId, NftId)>()
             .output::<Option<NftInfo>>()
             .ignore_error_code()
@@ -224,7 +188,7 @@ impl Rmrk {
         nft_id: NftId,
         resource_id: ResourceId,
     ) -> Option<u32> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010006)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010004)
             .input::<(CollectionId, NftId, ResourceId)>()
             .output::<Option<u32>>()
             .ignore_error_code()
@@ -235,7 +199,7 @@ impl Rmrk {
         parent: (CollectionId, NftId),
         child: (CollectionId, NftId),
     ) -> Option<()> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010007)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010005)
             .input::<(
                 (CollectionId, NftId),
                 (CollectionId, NftId)
@@ -250,7 +214,7 @@ impl Rmrk {
         nft_id: NftId,
         resource_id: ResourceId,
     ) -> Option<ResourceInfo> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010008)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010006)
             .input::<(CollectionId, NftId, ResourceId)>()
             .output::<Option<ResourceInfo>>()
             .ignore_error_code()
@@ -262,7 +226,7 @@ impl Rmrk {
         nft_id: NftId,
         base_id: BaseId,
     ) -> Option<()> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010009)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010007)
             .input::<(CollectionId, NftId, BaseId)>()
             .output::<Option<()>>()
             .ignore_error_code()
@@ -276,7 +240,7 @@ impl Rmrk {
         base_id: BaseId,
         slot_id: SlotId,
     ) -> Option<()> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000A)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010008)
             .input::<(
                 CollectionId,
                 NftId,
@@ -300,7 +264,7 @@ impl Rmrk {
         nft_id: Option<NftId>,
         key: Vec<u8>,
     ) -> Option<Vec<u8>> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000B)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010009)
             .input::<(CollectionId, Option<NftId>, Vec<u8>)>()
             .output::<Option<Vec<u8>>>()
             .ignore_error_code()
@@ -308,36 +272,40 @@ impl Rmrk {
     }
 
     pub fn lock(collection_id: CollectionId, nft_id: NftId) -> bool {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000C)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000A)
             .input::<(CollectionId, NftId)>()
             .output::<bool>()
             .ignore_error_code()
             .call(&(collection_id, nft_id))
     }
 
+    // write
     pub fn mint_nft(
         owner: AccountId,
+        nft_id: NftId,
         collection_id: CollectionId,
         royalty_recipient: Option<AccountId>,
         royalty: Option<u32>,
         metadata: Vec<u8>,
         transferable: bool,
-        resources: Option<Vec<ResourceTypes>>,
+        resources: Option<Vec<ResourceInfoMin>>,
     ) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000D)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011001)
             .input::<(
                 AccountId,
+                NftId,
                 CollectionId,
                 Option<AccountId>,
                 Option<u32>,
                 Vec<u8>,
                 bool,
-                Option<Vec<ResourceTypes>>,
+                Option<Vec<ResourceInfoMin>>,
             )>()
             .output::<Result<(), RmrkError>>()
             .handle_error_code::<RmrkError>()
             .call(&(
                 owner,
+                nft_id,
                 collection_id,
                 royalty_recipient,
                 royalty,
@@ -349,27 +317,30 @@ impl Rmrk {
 
     pub fn mint_nft_directly_to_nft(
         owner: (CollectionId, NftId),
+        nft_id: NftId,
         collection_id: CollectionId,
         royalty_recipient: Option<AccountId>,
         royalty: Option<u32>,
         metadata: Vec<u8>,
         transferable: bool,
-        resources: Option<Vec<ResourceTypes>>,
+        resources: Option<Vec<ResourceInfoMin>>,
     ) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000E)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011002)
             .input::<(
                 (CollectionId, NftId),
+                NftId,
                 CollectionId,
                 Option<AccountId>,
                 Option<u32>,
                 Vec<u8>,
                 bool,
-                Option<Vec<ResourceTypes>>,
+                Option<Vec<ResourceInfoMin>>,
             )>()
             .output::<Result<(), RmrkError>>()
             .handle_error_code::<RmrkError>()
             .call(&(
                 owner,
+                nft_id,
                 collection_id,
                 royalty_recipient,
                 royalty,
@@ -384,7 +355,7 @@ impl Rmrk {
         max: Option<u32>,
         symbol: Vec<u8>,
     ) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000F)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011003)
             .input::<(Vec<u8>, Option<u32>, Vec<u8>)>()
             .output::<Result<(), RmrkError>>()
             .handle_error_code::<RmrkError>()
@@ -396,7 +367,7 @@ impl Rmrk {
         nft_id: NftId,
         max_burns: u32,
     ) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010010)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011004)
             .input::<(CollectionId, NftId, u32)>()
             .output::<Result<(), RmrkError>>()
             .handle_error_code::<RmrkError>()
@@ -404,7 +375,7 @@ impl Rmrk {
     }
 
     pub fn destroy_collection(collection_id: CollectionId) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010011)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011005)
             .input::<CollectionId>()
             .output::<Result<(), RmrkError>>()
             .handle_error_code::<RmrkError>()
@@ -416,7 +387,7 @@ impl Rmrk {
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010012)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011006)
 			.input::<(CollectionId, NftId, AccountIdOrCollectionNftTuple)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -428,7 +399,7 @@ impl Rmrk {
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010013)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011007)
 			.input::<(CollectionId, NftId, AccountIdOrCollectionNftTuple)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -439,7 +410,7 @@ impl Rmrk {
 		collection_id: CollectionId,
 		nft_id: NftId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010014)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011008)
 			.input::<(CollectionId, NftId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -450,7 +421,7 @@ impl Rmrk {
 		collection_id: CollectionId,
 		new_issuer: AccountId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010015)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011009)
 			.input::<(CollectionId, AccountId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -463,7 +434,7 @@ impl Rmrk {
 		key: Vec<u8>,
 		value: Vec<u8>,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010016)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100A)
 			.input::<(
                 CollectionId,
                 Option<NftId>,
@@ -481,7 +452,7 @@ impl Rmrk {
 	}
 
 	pub fn lock_collection(collection_id: CollectionId) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010017)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100B)
 			.input::<CollectionId>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -492,36 +463,39 @@ impl Rmrk {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: BasicResource,
+        resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010018)
-			.input::<(CollectionId, NftId, BasicResource)>()
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100C)
+			.input::<(CollectionId, NftId, BasicResource, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource))?
+			.call(&(collection_id, nft_id, resource, resource_id))?
 	}
 
 	pub fn add_composable_resource(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ComposableResource,
+        resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010019)
-			.input::<(CollectionId, NftId, ComposableResource)>()
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100D)
+			.input::<(CollectionId, NftId, ComposableResource, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource))?
+			.call(&(collection_id, nft_id, resource, resource_id))?
 	}
 
 	pub fn add_slot_resource(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: SlotResource,
+        resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001A)
-			.input::<(CollectionId, NftId, SlotResource)>()
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100E)
+			.input::<(CollectionId, NftId, SlotResource, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource))?
+			.call(&(collection_id, nft_id, resource, resource_id))?
 	}
 
 	pub fn accept_resource(
@@ -529,7 +503,7 @@ impl Rmrk {
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001B)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001100F)
 			.input::<(CollectionId, NftId, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -541,7 +515,7 @@ impl Rmrk {
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001C)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011010)
 			.input::<(CollectionId, NftId, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -553,7 +527,7 @@ impl Rmrk {
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001D)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011011)
 			.input::<(CollectionId, NftId, ResourceId)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
@@ -565,7 +539,7 @@ impl Rmrk {
 		nft_id: NftId,
 		priorities: Vec<ResourceId>,
 	) -> Result<(), RmrkError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001E)
+        ::ink_env::chain_extension::ChainExtensionMethod::build(0x00011012)
 			.input::<(CollectionId, NftId, Vec<ResourceId>)>()
 			.output::<Result<(), RmrkError>>()
 			.handle_error_code::<RmrkError>()
