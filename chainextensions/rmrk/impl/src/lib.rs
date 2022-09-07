@@ -232,23 +232,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension MinfNft failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension MintNft failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -290,19 +278,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension MintNftDirectlyToNft failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension MintNftDirectlyToNft failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -334,19 +314,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension CreateCollection failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension CreateCollection failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -366,23 +338,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension BurnNft failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension BurnNft failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -399,19 +359,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension DestroyCollection failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension DestroyCollection failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -434,23 +386,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension Send failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension Send failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -473,23 +413,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension AcceptNft failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension AcceptNft failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -507,23 +435,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension RejectNft failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension RejectNft failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -543,19 +459,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension ChangeCollectionIssuer failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension ChangeCollectionIssuer failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -580,23 +488,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension SetProperty failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension SetProperty failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -613,19 +509,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension LockCollection failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension LockCollection failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -650,19 +538,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddBasicResource failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddBasicResource failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -690,19 +570,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddComposableResource failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddComposableResource failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -727,19 +599,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddSlotResource failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AddSlotResource failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -759,19 +623,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResource failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResource failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -791,19 +647,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension RemoveResource failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension RemoveResource failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -823,19 +671,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResourceRemoval failed to write result")
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other("[ChainExtension] RmrkExtension AcceptResourceRemoval failed to write result")
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
@@ -858,23 +698,11 @@ impl<
 
 				return match result {
 					Ok(_) => {
-						let res = Result::<(), RmrkError>::Ok(());
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension SetPriority failed to write result",
-							)
-						})?;
 						Ok(RetVal::Converging(RmrkError::None as u32))
 					},
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
-						let res = Result::<(), RmrkError>::Err(mapped_error);
-						env.write(&res.encode(), false, None).map_err(|_| {
-							DispatchError::Other(
-								"[ChainExtension] RmrkExtension SetPriority failed to write result",
-							)
-						})?;
-						Err(e)
+						Ok(RetVal::Converging(mapped_error as u32))
 					},
 				}
 			},
