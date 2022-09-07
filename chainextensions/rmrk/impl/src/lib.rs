@@ -231,9 +231,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -277,9 +275,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -313,9 +309,7 @@ impl<
 				);}
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -337,9 +331,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -358,9 +350,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -385,9 +375,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -412,9 +400,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -434,9 +420,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -458,9 +442,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -487,9 +469,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -508,9 +488,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -537,9 +515,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -569,9 +545,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -598,9 +572,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -622,9 +594,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -646,9 +616,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -670,9 +638,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
@@ -697,9 +663,7 @@ impl<
 				);
 
 				return match result {
-					Ok(_) => {
-						Ok(RetVal::Converging(RmrkError::None as u32))
-					},
+					Ok(_) => Ok(RetVal::Converging(RmrkError::None as u32)),
 					Err(e) => {
 						let mapped_error = RmrkError::try_from(e)?;
 						Ok(RetVal::Converging(mapped_error as u32))
