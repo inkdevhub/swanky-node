@@ -7,7 +7,9 @@ use chain_extension_trait::ChainExtensionExec;
 use codec::Encode;
 use frame_support::BoundedVec;
 use frame_system::RawOrigin;
-use pallet_contracts::chain_extension::{Environment, Ext, InitState, SysConfig, UncheckedFrom, RetVal};
+use pallet_contracts::chain_extension::{
+	Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+};
 use pallet_rmrk_core::BoundedResourceInfoTypeOf;
 use rmrk_chain_extension_types::{RmrkError, RmrkFunc};
 use rmrk_traits::{
@@ -23,7 +25,10 @@ impl<
 			+ pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	> ChainExtensionExec<T> for RmrkExtension<T>
 {
-	fn execute_func<E>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	fn execute_func<E>(
+		func_id: u32,
+		env: Environment<E, InitState>,
+	) -> Result<RetVal, DispatchError>
 	where
 		E: Ext<T = T>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
