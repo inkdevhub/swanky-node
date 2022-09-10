@@ -177,10 +177,6 @@ pub struct ComposableResource {
 	/// base-4477293-kanaria_superbird.
 	pub base: BaseId,
 
-	/// If the resource is Media, the base property is absent. Media src should be a URI like an
-	/// IPFS hash.
-	pub src: Option<Vec<u8>>,
-
 	/// Reference to IPFS location of metadata
 	pub metadata: Option<Vec<u8>>,
 
@@ -195,10 +191,6 @@ pub struct SlotResource {
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
 	/// base-4477293-kanaria_superbird.
 	pub base: BaseId,
-
-	/// If the resource is Media, the base property is absent. Media src should be a URI like an
-	/// IPFS hash.
-	pub src: Option<Vec<u8>>,
 
 	/// Reference to IPFS location of metadata
 	pub metadata: Option<Vec<u8>>,
