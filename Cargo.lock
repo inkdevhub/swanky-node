@@ -703,7 +703,7 @@ dependencies = [
 [[package]]
 name = "chain-extension-trait"
 version = "1.0.2"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#52e5bcb49bd633680718c948aa21a2060058165d"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "pallet-contracts",
  "sp-runtime",
@@ -1150,7 +1150,7 @@ dependencies = [
 [[package]]
 name = "dapps-staking-chain-extension"
 version = "1.0.3"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#52e5bcb49bd633680718c948aa21a2060058165d"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "chain-extension-trait",
  "dapps-staking-chain-extension-types",
@@ -1172,7 +1172,7 @@ dependencies = [
 [[package]]
 name = "dapps-staking-chain-extension-types"
 version = "1.0.2"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#52e5bcb49bd633680718c948aa21a2060058165d"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -3979,7 +3979,8 @@ dependencies = [
 
 [[package]]
 name = "pallet-chain-extension-rmrk"
-version = "0.2.0"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "chain-extension-trait",
  "frame-support",
@@ -4084,8 +4085,8 @@ dependencies = [
 
 [[package]]
 name = "pallet-dapps-staking"
-version = "3.6.2"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#52e5bcb49bd633680718c948aa21a2060058165d"
+version = "3.6.3"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5100,7 +5101,8 @@ dependencies = [
 
 [[package]]
 name = "rmrk-chain-extension-types"
-version = "0.2.0"
+version = "4.0.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.28#1f4399a25a8eda9970a71ff4f9f1418212258146"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
