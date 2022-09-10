@@ -444,25 +444,6 @@ impl<AccountId> Default for SmartContract<AccountId> {
 		SmartContract::Evm(H160::repeat_byte(0x00))
 	}
 }
-#[cfg(not(feature = "runtime-benchmarks"))]
-impl<AccountId> pallet_dapps_staking::IsContract for SmartContract<AccountId> {
-	fn is_valid(&self) -> bool {
-		match self {
-			SmartContract::Wasm(_account) => true,
-			SmartContract::Evm(_account) => true,
-		}
-	}
-}
-
-#[cfg(feature = "runtime-benchmarks")]
-impl<AccountId> pallet_dapps_staking::IsContract for SmartContract<AccountId> {
-	fn is_valid(&self) -> bool {
-		match self {
-			SmartContract::Wasm(_account) => true,
-			SmartContract::Evm(_account) => true,
-		}
-	}
-}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen)]
 pub struct BondStakeInput<AccountId, Balance> {
@@ -483,8 +464,7 @@ impl ChainExtension<Runtime> for DappsStakingChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)?;
-		Ok(RetVal::Converging(0))
+		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)
 	}
 }
 
@@ -501,8 +481,7 @@ impl ChainExtension<Runtime> for RmrkChainExtension {
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		RmrkExtension::execute_func::<E>(env.func_id().into(), env)?;
-		Ok(RetVal::Converging(0))
+		RmrkExtension::execute_func::<E>(env.func_id().into(), env)
 	}
 }
 
@@ -764,7 +743,7 @@ impl_runtime_apis! {
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
 			let weight = Executive::try_runtime_upgrade().unwrap();
-			(weight, BlockWeights::get().max_block)
+			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
 		fn execute_block_no_check(block: Block) -> Weight {
