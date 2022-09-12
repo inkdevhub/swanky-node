@@ -163,7 +163,7 @@ pub enum ResourceTypes {
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub struct BasicResource {
 	/// Reference to IPFS location of metadata
-	pub metadata: Option<Vec<u8>>,
+	pub metadata: Vec<u8>,
 }
 
 #[derive(PartialEq, Debug, Eq, Clone, Encode, Decode)]
