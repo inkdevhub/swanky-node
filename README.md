@@ -3,19 +3,19 @@
 Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.27) and its unstable-feature are enabled by default.
+- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.29) and its unstable-feature are enabled by default.
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called.
   Blocks are finalized when `engine_finalizeBlock` RPC called.
-- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.27/frame/dapps-staking) and ChainExtension to interact with it.
-- [pallet-assets](https://github.com/paritytech/substrate/tree/master/frame/assets).
-- [pallet-rmrk](https://github.com/AstarNetwork/rmrk-substrate/tree/polkadot-v0.9.27) (core, equip, market) and chain extensions for pallet-rmrk-core.
+- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.29/frame/dapps-staking) and ChainExtension to interact with it.
+- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.29/frame/assets).
+- [pallet-rmrk](https://github.com/AstarNetwork/rmrk-substrate/tree/polkadot-v0.9.29) (core, equip, market) and chain extensions for pallet-rmrk-core.
 
 It is optimized to local development purpose while removing unnecessary components such as P2P.
 More features and pallets to interact with (Contract <-> Runtime) will be added.
 
 ## Compatible ink! version
-ink! version `3.3.1` or lower is supported by pallet-contract polkadot-0.9.27 branch.
+ink! version `3.3.1` or lower is supported by pallet-contract polkadot-0.9.29 branch.
 
 ## Installation
 ### Download Binary
