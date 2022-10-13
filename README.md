@@ -71,7 +71,11 @@ Purge the development chain's state.
 > - Ferdie//stash
 
 ### Show only Errors and Contract Debug Output
-To have only errors and contract debug output show up on the console you can supply `-lerror,runtime::contracts=debug` when starting the node.
+To have only errors and contract debug output show up on the console you can supply
+```
+-lerror,runtime::contracts=debug
+```
+when starting the node.
 
 Important: Debug output is only printed for RPC calls or off-chain tests ‒ not for transactions.
 
