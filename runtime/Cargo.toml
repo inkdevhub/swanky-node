@@ -1,6 +1,6 @@
 [package]
 name = "swanky-runtime"
-version = "0.11.0"
+version = "0.11.2"
 description = "A fresh FRAME-based Substrate runtime, ready for hacking."
 authors = ["Astar Network"]
 homepage = "https://astar.network"
@@ -44,14 +44,15 @@ pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate",
 pallet-contracts-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.28", default-features = false }
 
 # astar-frame common
-chain-extension-trait = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.28", default-features = false }
+chain-extension-trait = { git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/uniques-ce.28", default-features = false }
 
 # dApps staking
-dapps-staking-chain-extension = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.28", default-features = false }
-pallet-dapps-staking = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.28", default-features = false }
+dapps-staking-chain-extension = { git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/uniques-ce.28", default-features = false }
+pallet-dapps-staking = { git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/uniques-ce.28", default-features = false }
+pallet-uniques-chain-extension = {  git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/uniques-ce.28", default-features = false }
 
 # RMRK specific
-pallet-chain-extension-rmrk = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.28", default-features = false }
+pallet-chain-extension-rmrk = { git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/uniques-ce.28", default-features = false }
 pallet-rmrk-core = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.28", default-features = false }
 pallet-rmrk-equip = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.28", default-features = false }
 pallet-rmrk-market = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.28", default-features = false }

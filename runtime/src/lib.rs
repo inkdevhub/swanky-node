@@ -61,6 +61,7 @@ pub use sp_runtime::{Perbill, Permill};
 use chain_extension_trait::ChainExtensionExec;
 use dapps_staking_chain_extension::DappsStakingExtension;
 use pallet_chain_extension_rmrk::RmrkExtension;
+use pallet_uniques_chain_extension::UniquesExtension;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -319,7 +320,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
+	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension, UniquesChainExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -428,7 +429,7 @@ impl pallet_uniques::Config for Runtime {
 	type StringLimit = StringLimit;
 	type KeyLimit = KeyLimit;
 	type ValueLimit = ValueLimit;
-	type WeightInfo = ();
+	type WeightInfo = pallet_uniques::weights::SubstrateWeight<Runtime>;
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
@@ -482,6 +483,22 @@ impl ChainExtension<Runtime> for RmrkChainExtension {
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
 		RmrkExtension::execute_func::<E>(env.func_id().into(), env)
+	}
+}
+#[derive(Default)]
+pub struct UniquesChainExtension;
+
+impl RegisteredChainExtension<Runtime> for UniquesChainExtension {
+	const ID: u16 = 0x0002;
+}
+
+impl ChainExtension<Runtime> for UniquesChainExtension {
+	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		E: Ext<T = Runtime>,
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		UniquesExtension::execute_func::<E>(env.func_id().into(), env)
 	}
 }
 
