@@ -16,6 +16,6 @@ cargo build --release
 ````
 4. run the node
 ````
-./target/release/swanky-node --dev --tmp -lerror,runtime::contracts=debug 
+./target/release/swanky-node --dev --tmp -l runtime=trace -lerror,runtime::contracts=debug
 ````
 
