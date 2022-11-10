@@ -205,7 +205,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		transaction_pool.clone().import_notification_stream().map(|_| {
 			sc_consensus_manual_seal::EngineCommand::SealNewBlock {
 				create_empty: false,
-				finalize: false,
+				finalize: true,
 				parent_hash: None,
 				sender: None,
 			}
