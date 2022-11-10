@@ -202,7 +202,7 @@ where
 					transferable,
 					resources,
 				): (
-					T::AccountId,
+					Option<T::AccountId>,
 					T::ItemId,
 					T::CollectionId,
 					Option<T::AccountId>,
@@ -215,7 +215,7 @@ where
 				let contract = env.ext().address().clone();
 				let result = pallet_rmrk_core::Pallet::<T>::mint_nft(
 					RawOrigin::Signed(contract).into(),
-					Some(owner.clone()),
+					owner,
 					nft_id,
 					collection_id,
 					royalty_recipient,

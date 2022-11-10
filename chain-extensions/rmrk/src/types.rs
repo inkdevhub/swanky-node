@@ -105,6 +105,7 @@ pub enum RmrkError {
 	ResourceAlreadyExists,
 	NftAlreadyExists,
 	EmptyResource,
+	/// The recursion limit has been reached.
 	TooManyRecursions,
 	NftIsLocked,
 	CannotAcceptNonOwnedNft,
@@ -129,7 +130,6 @@ impl TryFrom<DispatchError> for RmrkError {
 			_ => Some("No module error Info"),
 		};
 		match error_text {
-			Some("NoneValue") => Ok(RmrkError::Success),
 			Some("StorageOverflow") => Ok(RmrkError::StorageOverflow),
 			Some("TooLong") => Ok(RmrkError::TooLong),
 			Some("NoAvailableCollectionId") => Ok(RmrkError::NoAvailableCollectionId),
