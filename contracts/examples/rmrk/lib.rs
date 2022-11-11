@@ -18,11 +18,6 @@ mod rmrk {
 
 		// READ functions
 		#[ink(message)]
-		pub fn collection_index(&self) -> CollectionId {
-            Rmrk::collection_index()
-		}
-
-		#[ink(message)]
 		pub fn collections(&self, collection_id: CollectionId) -> Option<CollectionInfo> {
             Rmrk::collections(collection_id)
 		}
@@ -112,7 +107,7 @@ mod rmrk {
 		#[ink(message)]
 		pub fn mint_ntf(
 		    &mut self,
-		    owner: AccountId,
+		    owner: Option<AccountId>,
 			nft_id: NftId,
 		    collection_id: CollectionId,
 		    royalty_recipient: Option<AccountId>,
@@ -160,11 +155,13 @@ mod rmrk {
 		#[ink(message)]
 		pub fn create_collection(
 			&mut self,
+			collection_id: CollectionId,
 			metadata: Vec<u8>,
 			max: Option<u32>,
 			symbol: Vec<u8>,
 		) -> Result<(), RmrkError> {
 			Rmrk::create_collection(
+				collection_id,
                 metadata,
                 max,
                 symbol,
@@ -176,12 +173,10 @@ mod rmrk {
 		    &mut self,
 		    collection_id: CollectionId,
 		    nft_id: NftId,
-		    max_burns: u32,
 		) -> Result<(), RmrkError> {
             Rmrk::burn_nft(
                 collection_id,
                 nft_id,
-                max_burns,
             )
 		}
 

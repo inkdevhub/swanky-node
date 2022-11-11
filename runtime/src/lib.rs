@@ -7,13 +7,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode};
-use pallet_contracts::{
-	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, RegisteredChainExtension, RetVal, SysConfig,
-		UncheckedFrom,
-	},
-	DefaultContractAccessWeight,
-};
+use pallet_contracts::DefaultContractAccessWeight;
 pub use pallet_rmrk_core;
 
 use sp_api::impl_runtime_apis;
@@ -22,7 +16,7 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchError, MultiSignature, RuntimeDebug,
+	ApplyExtrinsicResult, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -58,9 +52,10 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
-use chain_extension_trait::ChainExtensionExec;
-use dapps_staking_chain_extension::DappsStakingExtension;
+use pallet_chain_extension_dapps_staking::DappsStakingExtension;
 use pallet_chain_extension_rmrk::RmrkExtension;
+
+mod chain_extensions;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -179,7 +174,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The aggregated dispatch type that is available for extrinsics.
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
 	type Lookup = AccountIdLookup<AccountId, ()>;
 	/// The index type for storing how many extrinsics an account has signed.
@@ -193,9 +188,9 @@ impl frame_system::Config for Runtime {
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	/// The ubiquitous origin type.
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
 	type BlockHashCount = BlockHashCount;
 	/// The weight of database operations that the runtime can invoke.
@@ -242,7 +237,7 @@ impl pallet_balances::Config for Runtime {
 	/// The type for recording an account's balance.
 	type Balance = Balance;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU128<500>;
 	type AccountStore = System;
@@ -261,7 +256,7 @@ parameter_types! {
 }
 
 impl pallet_assets::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = AssetId;
 	type Currency = Balances;
@@ -278,7 +273,7 @@ impl pallet_assets::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
@@ -287,8 +282,8 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 impl pallet_sudo::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 
 // contracts stuffs.
@@ -306,8 +301,8 @@ impl pallet_contracts::Config for Runtime {
 	type Time = Timestamp;
 	type Randomness = RandomnessCollectiveFlip;
 	type Currency = Balances;
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 	/// The safest default is to allow no calls at all.
 	///
 	/// Runtimes should whitelist dispatchables that are allowed to be called from contracts
@@ -319,7 +314,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (RmrkChainExtension, DappsStakingChainExtension);
+	type ChainExtension = (DappsStakingExtension<Self>, RmrkExtension<Self>);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -327,7 +322,6 @@ impl pallet_contracts::Config for Runtime {
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type ContractAccessWeight = DefaultContractAccessWeight<RuntimeBlockWeights>;
 	type MaxCodeLen = ConstU32<{ 128 * 1024 }>;
-	type RelaxedMaxCodeLen = ConstU32<{ 256 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
 }
 
@@ -348,7 +342,7 @@ impl pallet_dapps_staking::Config for Runtime {
 	type BlockPerEra = BlockPerEra;
 	type SmartContract = SmartContract<AccountId>;
 	type RegisterDeposit = RegisterDeposit;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_dapps_staking::WeightInfo<Runtime>;
 	type MaxNumberOfStakersPerContract = MaxNumberOfStakersPerContract;
 	type MinimumStakingAmount = MinimumStakingAmount;
@@ -360,23 +354,24 @@ impl pallet_dapps_staking::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 25;
 	pub const MaxPriorities: u32 = 25;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
+	pub const NestingBudget: u32 = 20;
 }
 
 impl pallet_rmrk_core::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type NestingBudget = NestingBudget;
+	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -384,7 +379,7 @@ parameter_types! {
 }
 
 impl pallet_rmrk_market::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
@@ -404,7 +399,7 @@ parameter_types! {
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }
@@ -413,7 +408,7 @@ type CollectionId = u32;
 type StringLimit = UniquesStringLimit;
 
 impl pallet_uniques::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type CollectionId = CollectionId;
 	type ItemId = u32;
 	type Currency = Balances;
@@ -431,7 +426,9 @@ impl pallet_uniques::Config for Runtime {
 	type WeightInfo = ();
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, scale_info::TypeInfo)]
+#[derive(
+	PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, MaxEncodedLen, scale_info::TypeInfo,
+)]
 pub enum SmartContract<AccountId> {
 	/// EVM smart contract instance.
 	Evm(sp_core::H160),
@@ -445,44 +442,16 @@ impl<AccountId> Default for SmartContract<AccountId> {
 	}
 }
 
+impl<AccountId: From<[u8; 32]>> From<[u8; 32]> for SmartContract<AccountId> {
+	fn from(input: [u8; 32]) -> Self {
+		SmartContract::Wasm(input.into())
+	}
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen)]
 pub struct BondStakeInput<AccountId, Balance> {
 	account_id: AccountId,
 	value: Balance,
-}
-
-#[derive(Default)]
-pub struct DappsStakingChainExtension;
-
-impl RegisteredChainExtension<Runtime> for DappsStakingChainExtension {
-	const ID: u16 = 0x0000;
-}
-
-impl ChainExtension<Runtime> for DappsStakingChainExtension {
-	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-	where
-		E: Ext<T = Runtime>,
-		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-	{
-		DappsStakingExtension::execute_func::<E>(env.func_id().into(), env)
-	}
-}
-
-#[derive(Default)]
-pub struct RmrkChainExtension;
-
-impl RegisteredChainExtension<Runtime> for RmrkChainExtension {
-	const ID: u16 = 0x0001;
-}
-
-impl ChainExtension<Runtime> for RmrkChainExtension {
-	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-	where
-		E: Ext<T = Runtime>,
-		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-	{
-		RmrkExtension::execute_func::<E>(env.func_id().into(), env)
-	}
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -526,9 +495,10 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
+pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
