@@ -3960,6 +3960,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "obce"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.30#ac3e2f5354418fc45f7bd26739fc9ee8c5d72d8a"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "obce-macro",
+ "pallet-contracts",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "obce-codegen"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.30#ac3e2f5354418fc45f7bd26739fc9ee8c5d72d8a"
+dependencies = [
+ "blake2",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "obce-macro"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.30#ac3e2f5354418fc45f7bd26739fc9ee8c5d72d8a"
+dependencies = [
+ "obce-codegen",
+ "proc-macro2",
+ "syn",
+ "synstructure",
+]
+
+[[package]]
 name = "object"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4022,6 +4060,17 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-assets-chain-extension"
+version = "0.1.1"
+source = "git+https://github.com/AstarNetwork/pallet-assets-chain-extension?branch=polkadot-v0.9.30#0d1d3adbf8806788f8d98e58c27fe91fe3998db1"
+dependencies = [
+ "obce",
+ "pallet-assets",
+ "parity-scale-codec",
+ "scale-info",
 ]
 
 [[package]]
@@ -4096,6 +4145,7 @@ dependencies = [
  "pallet-contracts-proc-macro",
  "parity-scale-codec",
  "rand 0.8.5",
+ "rand_pcg 0.3.1",
  "scale-info",
  "serde",
  "smallvec",
@@ -7715,6 +7765,7 @@ dependencies = [
  "hex-literal",
  "log",
  "pallet-assets",
+ "pallet-assets-chain-extension",
  "pallet-balances",
  "pallet-chain-extension-dapps-staking",
  "pallet-chain-extension-rmrk",

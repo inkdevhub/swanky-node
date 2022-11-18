@@ -54,6 +54,9 @@ pallet-rmrk-equip = { git = "https://github.com/AstarNetwork/rmrk-substrate", br
 pallet-rmrk-market = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.30", default-features = false }
 rmrk-traits = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.30", default-features = false }
 
+# pallet-asset chain-extension
+pallet-assets-chain-extension = { git = "https://github.com/AstarNetwork/pallet-assets-chain-extension", default-features = false, features = ["substrate"], branch = "polkadot-v0.9.30" }
+
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
@@ -102,6 +105,7 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"pallet-assets-chain-extension/substrate-std",
 ]
 contracts-unstable-interface = [
 	"pallet-contracts/unstable-interface",
@@ -116,6 +120,9 @@ runtime-benchmarks = [
 	"pallet-dapps-staking/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	"pallet-contracts/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
+	"pallet-assets-chain-extension/runtime-benchmarks",
 ]
 try-runtime = [
 	"log",
