@@ -314,7 +314,7 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (DappsStakingExtension<Self>, RmrkExtension<Self>);
+	type ChainExtension = (DappsStakingExtension<Self>, RmrkExtension<Self>, pallet_assets_chain_extension::substrate::AssetsExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
