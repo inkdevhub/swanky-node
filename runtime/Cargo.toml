@@ -54,6 +54,7 @@ pallet-rmrk-equip = { git = "https://github.com/AstarNetwork/rmrk-substrate", br
 pallet-rmrk-market = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.30", default-features = false }
 rmrk-traits = { git = "https://github.com/AstarNetwork/rmrk-substrate", branch = "polkadot-v0.9.30", default-features = false }
 
+# pallet-asset chain-extension
 pallet-assets-chain-extension = { git = "https://github.com/AstarNetwork/pallet-assets-chain-extension", default-features = false, features = ["substrate"], branch = "polkadot-v0.9.30" }
 
 # Used for the node template's RPCs
