@@ -9,6 +9,9 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.30/frame/dapps-staking) and ChainExtension to interact with it.
 - [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.30/frame/assets).
 - [pallet-rmrk](https://github.com/AstarNetwork/rmrk-substrate/tree/polkadot-v0.9.30) (core, equip, market) and chain extensions for pallet-rmrk-core.
+- RMRK chain-extension
+- Pallet-assets chain-extension
+- dApps-staking chain-extension
 
 It is optimized to local development purpose while removing unnecessary components such as P2P.
 More features and pallets to interact with (Contract <-> Runtime) will be added.
