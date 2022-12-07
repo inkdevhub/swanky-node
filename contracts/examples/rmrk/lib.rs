@@ -1,11 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink_lang as ink;
-
 #[ink::contract]
 mod rmrk {
-    use ink_prelude::vec::Vec;
     use rmrk_extension::*;
+	use ink::prelude::vec::Vec;
 
 	#[ink(storage)]
 	pub struct RmrkExample {}
@@ -361,9 +359,9 @@ mod rmrk {
 	mod tests {
 		/// Imports all the definitions from the outer scope so we can use them here.
 		use super::*;
-
-		/// Imports `ink_lang` so we can use `#[ink::test]`.
-		use ink_lang as ink;
+		use ink::env::{
+            test,
+        };
 
 		/// We test if the default constructor does its job.
 		#[ink::test]
