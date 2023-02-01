@@ -3,12 +3,12 @@
 Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.30) and its unstable-feature are enabled by default.
+- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.33) and its unstable-feature are enabled by default.
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored & finalized (1) as soon as a transaction get in the pool (2) when `engine_createBlock` `engine_finalizeBlock` RPC called respectively.
-- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.30/frame/dapps-staking) and ChainExtension to interact with it.
-- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.30/frame/assets).
-- [pallet-rmrk](https://github.com/AstarNetwork/rmrk-substrate/tree/polkadot-v0.9.30) (core, equip, market) and chain extensions for pallet-rmrk-core.
+- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.33/frame/dapps-staking) and ChainExtension to interact with it.
+- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.33/frame/assets).
+- [pallet-rmrk](https://github.com/AstarNetwork/rmrk-substrate/tree/polkadot-v0.9.33) (core, equip, market) and chain extensions for pallet-rmrk-core.
 - RMRK chain-extension
 - Pallet-assets chain-extension
 - dApps-staking chain-extension
@@ -17,7 +17,7 @@ It is optimized to local development purpose while removing unnecessary componen
 More features and pallets to interact with (Contract <-> Runtime) will be added.
 
 ## Compatible ink! version
-ink! version `3.4.0` or lower is supported by pallet-contract polkadot-0.9.30 branch.
+ink! `v4.0.0-beta` or lower is supported by pallet-contract polkadot-0.9.33 branch.
 
 ## Installation
 ### Download Binary
