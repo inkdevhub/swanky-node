@@ -1,6 +1,6 @@
 [package]
 name = "swanky-runtime"
-version = "1.0.0"
+version = "1.1.0"
 description = "A fresh FRAME-based Substrate runtime, ready for hacking."
 authors = ["Astar Network"]
 homepage = "https://astar.network"
