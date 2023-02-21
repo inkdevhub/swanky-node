@@ -3936,26 +3936,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-chain-extension-rmrk"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "log",
- "num-traits",
- "pallet-contracts",
- "pallet-contracts-primitives",
- "pallet-rmrk-core",
- "pallet-uniques",
- "parity-scale-codec",
- "rmrk-traits",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-contracts"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.33#2dff067e9f7f6f3cc4dbfdaaa97753eccc407689"
@@ -4039,60 +4019,6 @@ dependencies = [
  "parity-scale-codec",
  "safe-mix",
  "scale-info",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-rmrk-core"
-version = "0.0.1"
-source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.33#2b74d77c63f17143cd975eaeeff860baff5908e7"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-uniques",
- "parity-scale-codec",
- "rmrk-traits",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-rmrk-equip"
-version = "0.0.1"
-source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.33#2b74d77c63f17143cd975eaeeff860baff5908e7"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-rmrk-core",
- "pallet-uniques",
- "parity-scale-codec",
- "rmrk-traits",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-rmrk-market"
-version = "0.0.1"
-source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.33#2b74d77c63f17143cd975eaeeff860baff5908e7"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-rmrk-core",
- "pallet-uniques",
- "parity-scale-codec",
- "rmrk-traits",
- "scale-info",
- "serde",
  "sp-runtime",
  "sp-std",
 ]
@@ -4199,7 +4125,6 @@ name = "pallet-uniques"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.33#2dff067e9f7f6f3cc4dbfdaaa97753eccc407689"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5051,22 +4976,6 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
-]
-
-[[package]]
-name = "rmrk-traits"
-version = "0.0.1"
-source = "git+https://github.com/AstarNetwork/rmrk-substrate?branch=polkadot-v0.9.33#2b74d77c63f17143cd975eaeeff860baff5908e7"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -7552,21 +7461,16 @@ dependencies = [
  "pallet-assets-chain-extension",
  "pallet-balances",
  "pallet-chain-extension-dapps-staking",
- "pallet-chain-extension-rmrk",
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-dapps-staking",
  "pallet-randomness-collective-flip",
- "pallet-rmrk-core",
- "pallet-rmrk-equip",
- "pallet-rmrk-market",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-uniques",
  "parity-scale-codec",
- "rmrk-traits",
  "scale-info",
  "sp-api",
  "sp-block-builder",

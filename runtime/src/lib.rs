@@ -7,7 +7,6 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode};
-pub use pallet_rmrk_core;
 
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160};
@@ -52,7 +51,6 @@ pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
 use pallet_chain_extension_dapps_staking::DappsStakingExtension;
-use pallet_chain_extension_rmrk::RmrkExtension;
 
 mod chain_extensions;
 
@@ -316,7 +314,6 @@ impl pallet_contracts::Config for Runtime {
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
 	type ChainExtension = (
 		DappsStakingExtension<Self>,
-		RmrkExtension<Self>,
 		pallet_assets_chain_extension::substrate::AssetsExtension,
 	);
 	type DeletionQueueDepth = ConstU32<128>;
@@ -365,27 +362,8 @@ parameter_types! {
 	pub const NestingBudget: u32 = 20;
 }
 
-impl pallet_rmrk_core::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type ResourceSymbolLimit = ResourceSymbolLimit;
-	type PartsLimit = PartsLimit;
-	type MaxPriorities = MaxPriorities;
-	type CollectionSymbolLimit = CollectionSymbolLimit;
-	type MaxResourcesOnMint = MaxResourcesOnMint;
-	type NestingBudget = NestingBudget;
-	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
-}
-
 parameter_types! {
 	pub const MinimumOfferAmount: Balance = UNIT / 10_000;
-}
-
-impl pallet_rmrk_market::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type Currency = Balances;
-	type MinimumOfferAmount = MinimumOfferAmount;
 }
 
 parameter_types! {
@@ -401,12 +379,6 @@ parameter_types! {
 	pub const MaxCollectionsEquippablePerPart: u32 = 100;
 }
 
-impl pallet_rmrk_equip::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
-	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
-}
-
 type CollectionId = u32;
 type StringLimit = UniquesStringLimit;
 
@@ -417,7 +389,7 @@ impl pallet_uniques::Config for Runtime {
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
-	type Locker = pallet_rmrk_core::Pallet<Runtime>;
+	type Locker = ();
 	type CollectionDeposit = CollectionDeposit;
 	type ItemDeposit = ItemDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
@@ -473,9 +445,6 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
-		RmrkEquip: pallet_rmrk_equip,
-		RmrkCore: pallet_rmrk_core,
-		RmrkMarket: pallet_rmrk_market,
 		Uniques: pallet_uniques,
 	}
 );
