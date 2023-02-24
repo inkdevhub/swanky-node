@@ -7,10 +7,9 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode};
-pub use pallet_rmrk_core;
 
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160};
+use sp_core::{crypto::KeyTypeId, ConstBool, OpaqueMetadata, H160};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
@@ -25,6 +24,7 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime,
+	dispatch::DispatchClass,
 	log::{debug, error, trace},
 	pallet_prelude::MaxEncodedLen,
 	parameter_types,
@@ -33,7 +33,9 @@ pub use frame_support::{
 		StorageInfo,
 	},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+		constants::{
+			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
+		},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
@@ -52,7 +54,6 @@ pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
 use pallet_chain_extension_dapps_staking::DappsStakingExtension;
-use pallet_chain_extension_rmrk::RmrkExtension;
 
 mod chain_extensions;
 
@@ -96,8 +97,6 @@ pub mod opaque {
 	}
 }
 
-mod weights;
-
 // To learn more about runtime versioning and what each of the following value means:
 //   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
 #[sp_version::runtime_version]
@@ -140,6 +139,10 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
+/// We allow for 2 seconds of compute with a 6 second average block time, with maximum proof size.
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
+
 /// Constant values used within the runtime.
 pub const MILLIUNIT: Balance = 1_000_000_000_000_000;
 pub const UNIT: Balance = 1_000 * MILLIUNIT;
@@ -153,11 +156,26 @@ parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
 
-	/// We allow for 1 seconds of compute with a 2 second average block time.
-	pub RuntimeBlockWeights: BlockWeights = BlockWeights
-		::with_sensible_defaults(WEIGHT_PER_SECOND.set_proof_size(u64::MAX), NORMAL_DISPATCH_RATIO);
 	pub RuntimeBlockLength: BlockLength = BlockLength
 		::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	pub RuntimeBlockWeights: BlockWeights = BlockWeights::builder()
+		.base_block(BlockExecutionWeight::get())
+		.for_class(DispatchClass::all(), |weights| {
+			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+		})
+		.for_class(DispatchClass::Normal, |weights| {
+			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		})
+		.for_class(DispatchClass::Operational, |weights| {
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			// Operational transactions have some extra reserved space, so that they
+			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+			weights.reserved = Some(
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+			);
+		})
+		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+		.build_or_panic();
 	pub const SS58Prefix: u8 = 42;
 }
 
@@ -252,6 +270,7 @@ parameter_types! {
 	pub const MetadataDepositBase: Balance = deposit(1, 68);
 	pub const MetadataDepositPerByte: Balance = deposit(0, 1);
 	pub const AssetAccountDeposit: Balance = deposit(1, 18);
+	pub const RemoveItemsLimit: u32 = 1000;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -270,6 +289,9 @@ impl pallet_assets::Config for Runtime {
 	type Freezer = ();
 	type Extra = ();
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type RemoveItemsLimit = RemoveItemsLimit;
+	type AssetIdParameter = codec::Compact<AssetId>;
+	type CallbackHandle = ();
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -314,11 +336,8 @@ impl pallet_contracts::Config for Runtime {
 	type DepositPerByte = DepositPerByte;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (
-		DappsStakingExtension<Self>,
-		RmrkExtension<Self>,
-		pallet_assets_chain_extension::substrate::AssetsExtension,
-	);
+	type ChainExtension =
+		(DappsStakingExtension<Self>, pallet_assets_chain_extension::substrate::AssetsExtension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -326,6 +345,8 @@ impl pallet_contracts::Config for Runtime {
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type MaxCodeLen = ConstU32<{ 128 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
+	type UnsafeUnstableInterface = ConstBool<true>;
+	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
 }
 
 parameter_types! {
@@ -346,7 +367,7 @@ impl pallet_dapps_staking::Config for Runtime {
 	type SmartContract = SmartContract<AccountId>;
 	type RegisterDeposit = RegisterDeposit;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::pallet_dapps_staking::WeightInfo<Runtime>;
+	type WeightInfo = pallet_dapps_staking::weights::SubstrateWeight<Runtime>;
 	type MaxNumberOfStakersPerContract = MaxNumberOfStakersPerContract;
 	type MinimumStakingAmount = MinimumStakingAmount;
 	type PalletId = DappsStakingPalletId;
@@ -354,6 +375,7 @@ impl pallet_dapps_staking::Config for Runtime {
 	type UnbondingPeriod = UnbondingPeriod;
 	type MinimumRemainingAmount = MinimumRemainingAmount;
 	type MaxEraStakeValues = MaxEraStakeValues;
+	type UnregisteredDappRewardRetention = ConstU32<10>;
 }
 
 parameter_types! {
@@ -365,27 +387,8 @@ parameter_types! {
 	pub const NestingBudget: u32 = 20;
 }
 
-impl pallet_rmrk_core::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type ResourceSymbolLimit = ResourceSymbolLimit;
-	type PartsLimit = PartsLimit;
-	type MaxPriorities = MaxPriorities;
-	type CollectionSymbolLimit = CollectionSymbolLimit;
-	type MaxResourcesOnMint = MaxResourcesOnMint;
-	type NestingBudget = NestingBudget;
-	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
-}
-
 parameter_types! {
 	pub const MinimumOfferAmount: Balance = UNIT / 10_000;
-}
-
-impl pallet_rmrk_market::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type Currency = Balances;
-	type MinimumOfferAmount = MinimumOfferAmount;
 }
 
 parameter_types! {
@@ -401,12 +404,6 @@ parameter_types! {
 	pub const MaxCollectionsEquippablePerPart: u32 = 100;
 }
 
-impl pallet_rmrk_equip::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
-	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
-}
-
 type CollectionId = u32;
 type StringLimit = UniquesStringLimit;
 
@@ -417,7 +414,7 @@ impl pallet_uniques::Config for Runtime {
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
-	type Locker = pallet_rmrk_core::Pallet<Runtime>;
+	type Locker = ();
 	type CollectionDeposit = CollectionDeposit;
 	type ItemDeposit = ItemDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
@@ -473,9 +470,6 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
-		RmrkEquip: pallet_rmrk_equip,
-		RmrkCore: pallet_rmrk_core,
-		RmrkMarket: pallet_rmrk_market,
 		Uniques: pallet_uniques,
 	}
 );

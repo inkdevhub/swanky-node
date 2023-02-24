@@ -2,7 +2,6 @@
 members = [
 	"node",
 	"runtime",
-	"chain-extensions/rmrk",
 ]
 exclude = [
 	"contracts",
