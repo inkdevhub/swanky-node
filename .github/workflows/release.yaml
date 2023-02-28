@@ -47,18 +47,35 @@ jobs:
         version: '3.x'
 
     - name: Install & display rust toolchain
-      run: rustup show
+      run: |
+        rustup target add aarch64-unknown-linux-gnu
+        rustup show
 
     - name: Check targets are installed correctly
       run: rustup target list --installed
 
+    - name: Install zig
+      uses: korandoru/setup-zig@v1
+      with:
+        zig-version: "master"
+
+    - name: Install zigbuild
+      run: cargo install cargo-zigbuild
+
     - name: Build optimized binary
-      run: cargo build --release --verbose
+      run: |
+        cargo build --release --target x86_64-unknown-linux-gnu
+        cargo zigbuild --release --target aarch64-unknown-linux-gnu
 
     - uses: actions/upload-artifact@master
       with:
         name: swanky-node-ubuntu-latest-x86_64
-        path: target/release/swanky-node
+        path: target/x86_64-unknown-linux-gnu/release/swanky-node
+
+    - uses: actions/upload-artifact@master
+      with:
+        name: swanky-node-ubuntu-latest-aarch64
+        path: target/aarch64-unknown-linux-gnu/release/swanky-node
 
   native-macos:
     needs: checks-and-tests
@@ -122,7 +139,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu]
-        arch: [x86_64]
+        arch: [aarch64, x86_64]
         include:
           - os: macOS
             arch: universal
