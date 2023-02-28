@@ -75,18 +75,24 @@ jobs:
         version: '3.x'
 
     - name: Install & display rust toolchain
-      run: rustup show
+      run: |
+        rustup target add aarch64-apple-darwin
+        rustup show
 
     - name: Check targets are installed correctly
       run: rustup target list --installed
 
     - name: Build optimized binary
-      run: cargo build --release --verbose
+      run: |
+        cargo build --release --target x86_64-apple-darwin
+        cargo build --release --target aarch64-apple-darwin
+        mkdir -p ./artifacts/swanky-node-mac/
+        lipo ./target/x86_64-apple-darwin/release/swanky-node ./target/aarch64-apple-darwin/release/swanky-node -create -output ./artifacts/swanky-node-mac/swanky-node
 
     - uses: actions/upload-artifact@master
       with:
-        name: swanky-node-macOS-latest-x86_64
-        path: target/release/swanky-node
+        name: swanky-node-macOS-latest-universal
+        path: artifacts/swanky-node-mac/swanky-node
 
   publish-release-draft:
     needs: [native-linux, native-macOS]
@@ -115,21 +121,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: ["ubuntu", "macOS"]
+        os: [ubuntu]
+        arch: [x86_64]
+        include:
+          - os: macOS
+            arch: universal
     steps:
     - name: Create download folder
       run: |
-        mkdir -p ${{ matrix.os }}-bin
+        mkdir -p ${{ matrix.os }}-${{ matrix.arch }}-bin
 
     - name: Download pre-built collator binary
       uses: actions/download-artifact@v3
       with:
-        name: swanky-node-${{ matrix.os }}-latest-x86_64
-        path: ${{ matrix.os }}-bin
+        name: swanky-node-${{ matrix.os }}-latest-${{ matrix.arch }}
+        path: ${{ matrix.os }}-${{ matrix.arch }}-bin
 
     - name: Make binary executable and tar gzip
       run: |
-        cd ${{ matrix.os }}-bin
+        cd ${{ matrix.os }}-${{ matrix.arch }}-bin
         chmod +x swanky-node
         tar zcvf swanky-node.tar.gz swanky-node
 
@@ -139,6 +149,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.publish-release-draft.outputs.upload_url }}
-        asset_path: ${{ matrix.os }}-bin/swanky-node.tar.gz
-        asset_name: swanky-node-${{ github.ref_name }}-${{ matrix.os }}-x86_64.tar.gz
+        asset_path: ${{ matrix.os }}-${{ matrix.arch }}-bin/swanky-node.tar.gz
+        asset_name: swanky-node-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
         asset_content_type: application/gzip
