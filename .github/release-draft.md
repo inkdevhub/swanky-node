@@ -4,7 +4,8 @@ Changelog
 
 **Runtimes**
 
-| Arch |  Link  |
-| ----------- | ------- |
-|  `MacOS` | [Download]() |
-| `Ubuntu` | [Download]() |
+| Arch              | Link         |
+|-------------------|--------------|
+| `MacOS universal` | [Download]() |
+| `Ubuntu amd64`    | [Download]() |
+| `Ubuntu arm64`    | [Download]() |
