@@ -1,6 +1,6 @@
 [package]
 name = "swanky-runtime"
-version = "1.1.0"
+version = "1.2.0"
 description = "A fresh FRAME-based Substrate runtime, ready for hacking."
 authors = ["Astar Network"]
 homepage = "https://astar.network"
@@ -27,6 +27,7 @@ pallet-sudo = { default-features = false, git = "https://github.com/paritytech/s
 pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
 pallet-uniques = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
+pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
 sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
 sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.37" }
@@ -83,6 +84,7 @@ std = [
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
+	"pallet-utility/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-core/std",
