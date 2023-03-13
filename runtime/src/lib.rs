@@ -426,6 +426,13 @@ impl pallet_uniques::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 #[derive(
 	PartialEq, Eq, Copy, Clone, Encode, Decode, RuntimeDebug, MaxEncodedLen, scale_info::TypeInfo,
 )]
@@ -471,6 +478,7 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
 		Uniques: pallet_uniques,
+		Utility: pallet_utility,
 	}
 );
 
