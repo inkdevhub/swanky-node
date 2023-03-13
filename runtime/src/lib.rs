@@ -235,6 +235,13 @@ impl frame_system::Config for Runtime {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Self>;
+}
+
 parameter_types! {
 	pub const MinimumPeriod: u64 = 5;
 }
@@ -471,6 +478,7 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		DappsStaking: pallet_dapps_staking,
 		Uniques: pallet_uniques,
+		Utility: pallet_utility,
 	}
 );
 
