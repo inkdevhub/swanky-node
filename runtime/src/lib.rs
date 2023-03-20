@@ -46,13 +46,17 @@ use frame_system::{
 	EnsureSigned,
 };
 pub use pallet_balances::Call as BalancesCall;
+use pallet_chain_extension_assets::weights::SubstrateWeight;
+pub use pallet_chain_extension_assets::weights::WeightInfo as ChainExtensionWeightInfo;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 // Chain extensions
+use pallet_chain_extension_assets::AssetsExtension;
 use pallet_chain_extension_dapps_staking::DappsStakingExtension;
 
 mod chain_extensions;
@@ -344,7 +348,7 @@ impl pallet_contracts::Config for Runtime {
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
 	type ChainExtension =
-		(DappsStakingExtension<Self>, pallet_assets_chain_extension::substrate::AssetsExtension);
+		(DappsStakingExtension<Self>, AssetsExtension<Self, SubstrateWeight<Self>>);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;

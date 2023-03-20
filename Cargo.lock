@@ -289,6 +289,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
+name = "assets-chain-extension-types"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#df45f46d59a8c04d4c8002180cb1ee188eb64a28"
+dependencies = [
+ "frame-system",
+ "pallet-contracts",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+]
+
+[[package]]
 name = "async-io"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1256,7 +1268,7 @@ dependencies = [
 [[package]]
 name = "dapps-staking-chain-extension-types"
 version = "1.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#2fd2dca02e530212ed3ea8a2347055c0c2265065"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#df45f46d59a8c04d4c8002180cb1ee188eb64a28"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4102,44 +4114,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "obce"
-version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.37#53f8b50742b4c9c0e5a8131c4de085a3891abb55"
-dependencies = [
- "frame-support",
- "frame-system",
- "obce-macro",
- "pallet-contracts",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "obce-codegen"
-version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.37#53f8b50742b4c9c0e5a8131c4de085a3891abb55"
-dependencies = [
- "blake2",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "obce-macro"
-version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/obce?branch=polkadot-v0.9.37#53f8b50742b4c9c0e5a8131c4de085a3891abb55"
-dependencies = [
- "obce-codegen",
- "proc-macro2",
- "syn",
- "synstructure",
-]
-
-[[package]]
 name = "object"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4256,17 +4230,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-assets-chain-extension"
-version = "0.1.1"
-source = "git+https://github.com/AstarNetwork/pallet-assets-chain-extension?branch=polkadot-v0.9.37#ab514bc9c51b69abed30ae84b47d66d3dee72643"
-dependencies = [
- "obce",
- "pallet-assets",
- "parity-scale-codec",
- "scale-info",
-]
-
-[[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.37#f38bd6671d460293c93062cc1e4fe9e9e490cb29"
@@ -4282,9 +4245,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-chain-extension-assets"
+version = "0.1.0"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#df45f46d59a8c04d4c8002180cb1ee188eb64a28"
+dependencies = [
+ "assets-chain-extension-types",
+ "frame-support",
+ "frame-system",
+ "log",
+ "num-traits",
+ "pallet-assets",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-chain-extension-dapps-staking"
 version = "1.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#2fd2dca02e530212ed3ea8a2347055c0c2265065"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#df45f46d59a8c04d4c8002180cb1ee188eb64a28"
 dependencies = [
  "dapps-staking-chain-extension-types",
  "frame-support",
@@ -4355,15 +4338,12 @@ dependencies = [
 [[package]]
 name = "pallet-dapps-staking"
 version = "3.9.0"
-source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#2fd2dca02e530212ed3ea8a2347055c0c2265065"
+source = "git+https://github.com/AstarNetwork/astar-frame?branch=polkadot-v0.9.37#df45f46d59a8c04d4c8002180cb1ee188eb64a28"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "num-traits",
- "pallet-balances",
- "pallet-session",
- "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -4387,27 +4367,6 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-session"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.37#f38bd6671d460293c93062cc1e4fe9e9e490cb29"
-dependencies = [
- "frame-support",
- "frame-system",
- "impl-trait-for-tuples",
- "log",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-session",
- "sp-staking",
- "sp-std",
- "sp-trie",
 ]
 
 [[package]]
@@ -7867,7 +7826,7 @@ dependencies = [
 
 [[package]]
 name = "swanky-runtime"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "frame-benchmarking",
  "frame-executive",
@@ -7879,8 +7838,8 @@ dependencies = [
  "hex-literal",
  "log",
  "pallet-assets",
- "pallet-assets-chain-extension",
  "pallet-balances",
+ "pallet-chain-extension-assets",
  "pallet-chain-extension-dapps-staking",
  "pallet-contracts",
  "pallet-contracts-primitives",
