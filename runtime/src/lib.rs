@@ -144,12 +144,15 @@ const MAXIMUM_BLOCK_WEIGHT: Weight =
 	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
 
 /// Constant values used within the runtime.
-pub const MILLIUNIT: Balance = 1_000_000_000_000_000;
+pub const MICROUNIT: Balance = 1_000_000_000_000;
+pub const MILLIUNIT: Balance = 1_000 * MICROUNIT;
 pub const UNIT: Balance = 1_000 * MILLIUNIT;
+
+pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT;
 
 /// Charge fee for stored bytes and items.
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIUNIT / 1_000_000
+	items as Balance * 1 * UNIT + (bytes as Balance) * STORAGE_BYTE_FEE
 }
 
 parameter_types! {
@@ -348,9 +351,9 @@ impl pallet_contracts::Config for Runtime {
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
-	type CallStack = [pallet_contracts::Frame<Self>; 31];
+	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
-	type MaxCodeLen = ConstU32<{ 128 * 1024 }>;
+	type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
 	type MaxStorageKeyLen = ConstU32<128>;
 	type UnsafeUnstableInterface = ConstBool<true>;
 	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
