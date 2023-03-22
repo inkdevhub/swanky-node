@@ -11,7 +11,6 @@ impl RegisteredChainExtension<Runtime> for DappsStakingExtension<Runtime> {
 	const ID: u16 = 0x0000;
 }
 
-/// Based on chain-extension registry https://github.com/paritytech/chainextension-registry
 impl<W: WeightInfo> RegisteredChainExtension<Runtime> for AssetsExtension<Runtime, W> {
-	const ID: u16 = 18678;
+	const ID: u16 = 2;
 }
