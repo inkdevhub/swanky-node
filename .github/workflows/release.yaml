@@ -16,9 +16,7 @@ jobs:
         submodules: true
 
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
-      with:
-        version: '3.x'
+      run: sudo apt -y install protobuf-compiler
 
     - name: Install & display rust toolchain
       run: rustup show
@@ -42,9 +40,7 @@ jobs:
         submodules: true
 
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
-      with:
-        version: '3.x'
+      run: sudo apt -y install protobuf-compiler
 
     - name: Install & display rust toolchain
       run: |
@@ -87,9 +83,7 @@ jobs:
         submodules: true
 
     - name: Install Protoc
-      uses: arduino/setup-protoc@v1
-      with:
-        version: '3.x'
+      run: brew install protobuf
 
     - name: Install & display rust toolchain
       run: |
