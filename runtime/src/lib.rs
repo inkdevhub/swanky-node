@@ -58,6 +58,7 @@ pub use sp_runtime::{Perbill, Permill};
 // Chain extensions
 use pallet_chain_extension_assets::AssetsExtension;
 use pallet_chain_extension_dapps_staking::DappsStakingExtension;
+use chain_extension_signing::SigningExtension;
 
 mod chain_extensions;
 
@@ -351,7 +352,7 @@ impl pallet_contracts::Config for Runtime {
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
 	type ChainExtension =
-		(DappsStakingExtension<Self>, AssetsExtension<Self, SubstrateWeight<Self>>);
+		(DappsStakingExtension<Self>, SigningExtension<Self>, AssetsExtension<Self, SubstrateWeight<Self>>);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
