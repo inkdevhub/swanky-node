@@ -9,3 +9,7 @@ exclude = [
 
 [profile.release]
 panic = "unwind"
+
+
+[patch.'https://github.com/AstarNetwork/astar-frame']
+chain-extension-signing = { path = "../astar-frame/chain-extensions/signing" }
