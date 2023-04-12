@@ -6,8 +6,8 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.37).
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored & finalized (1) as soon as a transaction get in the pool (2) when `engine_createBlock` `engine_finalizeBlock` RPC called respectively.
-- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.37/frame/dapps-staking) and ChainExtension to interact with it.
-- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.37/frame/assets).
+- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
+- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
 - Pallet-assets chain-extension
 - dApps-staking chain-extension
 
