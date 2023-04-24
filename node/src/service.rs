@@ -7,7 +7,7 @@ use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::TransactionPool;
-use std::{sync::Arc, marker::PhantomData};
+use std::{marker::PhantomData, sync::Arc};
 use swanky_runtime::{self, opaque::Block, RuntimeApi};
 // Our native executor instance.
 pub struct ExecutorDispatch;
@@ -118,7 +118,10 @@ fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(config: Configuration, finalize_delay_sec: Option<u64>) -> Result<TaskManager, ServiceError> {
+pub fn new_full(
+	config: Configuration,
+	finalize_delay_sec: Option<u64>,
+) -> Result<TaskManager, ServiceError> {
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -239,7 +242,7 @@ pub fn new_full(config: Configuration, finalize_delay_sec: Option<u64>) -> Resul
 			delay_sec: sec,
 			_phantom: PhantomData::default(),
 		};
-	
+
 		task_manager.spawn_essential_handle().spawn_blocking(
 			"delayed_finalize",
 			None,

@@ -21,7 +21,6 @@
 
 use futures::prelude::*;
 use futures_timer::Delay;
-use substrate_prometheus_endpoint::Registry;
 use sc_client_api::{
 	backend::{Backend as ClientBackend, Finalizer},
 	client::BlockchainEvents,
@@ -30,12 +29,13 @@ use sc_consensus::{
 	block_import::{BlockImport, BlockImportParams, ForkChoiceStrategy},
 	import_queue::{BasicQueue, BoxBlockImport, Verifier},
 };
-use sp_core::traits::SpawnNamed;
 use sp_blockchain::HeaderBackend;
 use sp_consensus::{CacheKeyId, Environment, Proposer, SelectChain};
+use sp_core::traits::SpawnNamed;
 use sp_inherents::CreateInherentDataProviders;
 use sp_runtime::{traits::Block as BlockT, ConsensusEngineId};
 use std::{marker::PhantomData, sync::Arc, time::Duration};
+use substrate_prometheus_endpoint::Registry;
 
 mod error;
 mod finalize_block;
@@ -338,17 +338,21 @@ pub async fn run_delayed_finalize<B, CB, C>(
 	while let Some(notification) = block_import_stream.next().await {
 		let delay = Delay::new(Duration::from_secs(delay_sec));
 		let cloned_client = client.clone();
-		spawn_handle.spawn("delayed-finalize", None, Box::pin(async move {
-			delay.await;
-			finalize_block(FinalizeBlockParams {
-				hash: notification.hash,
-				sender: None,
-				justification: None,
-				finalizer: cloned_client,
-				_phantom: PhantomData,
-			})
-			.await
-		}));
+		spawn_handle.spawn(
+			"delayed-finalize",
+			None,
+			Box::pin(async move {
+				delay.await;
+				finalize_block(FinalizeBlockParams {
+					hash: notification.hash,
+					sender: None,
+					justification: None,
+					finalizer: cloned_client,
+					_phantom: PhantomData,
+				})
+				.await
+			}),
+		);
 	}
 }
 
