@@ -141,11 +141,11 @@ pub struct InstantSealParams<B: BlockT, BI, E, C: ProvideRuntimeApi<B>, TP, SC, 
 	pub create_inherent_data_providers: CIDP,
 }
 
-pub struct DelayedFinalizeParams<B: BlockT, C: ProvideRuntimeApi<B>> {
+pub struct DelayedFinalizeParams<B: BlockT, C: ProvideRuntimeApi<B>, S: SpawnNamed> {
 	/// Block import instance for well. importing blocks.
 	pub client: Arc<C>,
 
-	pub spawn_handle: Box<dyn SpawnNamed>,
+	pub spawn_handle: S,
 
 	/// The delay in seconds before a block is finalized.
 	pub delay_sec: u64,
@@ -321,17 +321,18 @@ pub async fn run_instant_seal_and_finalize<B, BI, CB, E, C, TP, SC, CIDP, P>(
 	.await
 }
 
-pub async fn run_delayed_finalize<B, CB, C>(
+pub async fn run_delayed_finalize<B, CB, C, S>(
 	DelayedFinalizeParams {
 		client,
 		spawn_handle,
 		delay_sec,
 		_phantom: PhantomData,
-	}: DelayedFinalizeParams<B, C>,
+	}: DelayedFinalizeParams<B, C, S>,
 ) where
 	B: BlockT + 'static,
 	CB: ClientBackend<B> + 'static,
 	C: HeaderBackend<B> + Finalizer<B, CB> + ProvideRuntimeApi<B> + BlockchainEvents<B> + 'static,
+	S: SpawnNamed,
 {
 	let mut block_import_stream = client.import_notification_stream();
 

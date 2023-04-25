@@ -238,7 +238,7 @@ pub fn new_full(
 	if let Some(sec) = finalize_delay_sec {
 		let delayed_finalize_params = sc_consensus_manual_seal::DelayedFinalizeParams {
 			client,
-			spawn_handle: Box::new(task_manager.spawn_handle()),
+			spawn_handle: task_manager.spawn_handle(),
 			delay_sec: sec,
 			_phantom: PhantomData::default(),
 		};
