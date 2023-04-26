@@ -7,7 +7,7 @@ use sc_keystore::LocalKeystore;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::TransactionPool;
-use std::{marker::PhantomData, sync::Arc};
+use std::sync::Arc;
 use swanky_runtime::{self, opaque::Block, RuntimeApi};
 // Our native executor instance.
 pub struct ExecutorDispatch;
