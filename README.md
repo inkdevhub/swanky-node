@@ -3,7 +3,7 @@
 Swanky node is a Substrate based blockchain configured to enable `pallet-contracts` (a smart contract module) and more features to help WASM smart contract development locally.
 
 ## Features
-- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.37).
+- [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.39).
 - `grandpa` & `aura` consensus were removed. Instead, `instant-seal` & `manual-seal` are used.
   Blocks are authored & finalized (1) as soon as a transaction get in the pool (2) when `engine_createBlock` `engine_finalizeBlock` RPC called respectively.
 - [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
@@ -14,7 +14,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 Swanky Node is optimized for local development, while removing unnecessary components such as P2P. Additional features and pallets, such as to interact between (Contract <-> Runtime), will be added in the future.
 
 ## Compatible ink! version
-ink! `v4.0.0` or lower is supported by pallet-contract polkadot-0.9.37 branch.
+ink! `v4.2.0` or lower is supported by pallet-contract polkadot-0.9.39 branch.
 
 ## Installation
 ### Download Binary
@@ -156,3 +156,12 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
       "params": ["0x0e0626477621754200486f323e3858cd5f28fcbe52c69b2581aecb622e384764", null]
     }'
 ```
+
+## Consensus (Delayed Finalize)
+By default, either manual or instant seal does not result in block finalization unless the `engine_finalizeBlock` RPC is executed. However, it is possible to configure the finalization of sealed blocks to occur after a certain amount of time by setting the `--finalize-delay-sec` option to a specific value, which specifies the number of seconds to delay before finalizing the blocks.
+
+```bash
+./target/release/swanky-node --finalize-delay-sec 5
+```
+
+In the above example, a setting of `5` seconds would result in the blocks being finalized five seconds after being sealed. In contrast, setting the value to `0` would lead to instant finalization, with the blocks being finalized immediately upon being sealed.

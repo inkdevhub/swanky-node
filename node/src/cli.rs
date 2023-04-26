@@ -7,6 +7,9 @@ pub struct Cli {
 
 	#[clap(flatten)]
 	pub run: RunCmd,
+
+	#[clap(long)]
+	pub finalize_delay_sec: Option<u64>,
 }
 
 #[derive(Debug, clap::Subcommand)]

@@ -118,7 +118,10 @@ fn remote_keystore(_url: &String) -> Result<Arc<LocalKeystore>, &'static str> {
 }
 
 /// Builds a new service for a full client.
-pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
+pub fn new_full(
+	config: Configuration,
+	finalize_delay_sec: Option<u64>,
+) -> Result<TaskManager, ServiceError> {
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -205,7 +208,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		transaction_pool.clone().import_notification_stream().map(|_| {
 			sc_consensus_manual_seal::EngineCommand::SealNewBlock {
 				create_empty: false,
-				finalize: true,
+				finalize: false,
 				parent_hash: None,
 				sender: None,
 			}
@@ -216,7 +219,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	let params = sc_consensus_manual_seal::ManualSealParams {
 		block_import: client.clone(),
 		env: proposer,
-		client,
+		client: client.clone(),
 		pool: transaction_pool,
 		commands_stream,
 		select_chain,
@@ -231,6 +234,20 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		None,
 		sc_consensus_manual_seal::run_manual_seal(params),
 	);
+
+	if let Some(sec) = finalize_delay_sec {
+		let delayed_finalize_params = sc_consensus_manual_seal::DelayedFinalizeParams {
+			client,
+			spawn_handle: task_manager.spawn_handle(),
+			delay_sec: sec,
+		};
+
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"delayed_finalize",
+			None,
+			sc_consensus_manual_seal::run_delayed_finalize(delayed_finalize_params),
+		);
+	}
 
 	network_starter.start_network();
 	Ok(task_manager)
