@@ -240,7 +240,6 @@ pub fn new_full(
 			client,
 			spawn_handle: task_manager.spawn_handle(),
 			delay_sec: sec,
-			_phantom: PhantomData::default(),
 		};
 
 		task_manager.spawn_essential_handle().spawn_blocking(

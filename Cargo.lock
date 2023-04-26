@@ -6036,7 +6036,7 @@ dependencies = [
 
 [[package]]
 name = "sc-consensus-manual-seal"
-version = "0.10.0-dev"
+version = "1.5.0"
 dependencies = [
  "assert_matches",
  "async-trait",

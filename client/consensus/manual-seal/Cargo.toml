@@ -1,12 +1,12 @@
 [package]
 name = "sc-consensus-manual-seal"
-version = "0.10.0-dev"
-authors = ["Parity Technologies <admin@parity.io>"]
+version = "1.5.0"
+authors = ["Astar Network"]
 description = "Manual sealing engine for Substrate"
 edition = "2021"
-license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/substrate/"
+license = "Unlicense"
+homepage = "https://astar.network"
+repository = "https://github.com/shunsukew/swanky-node/"
 readme = "README.md"
 
 [package.metadata.docs.rs]
