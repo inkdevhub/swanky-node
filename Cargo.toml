@@ -2,6 +2,7 @@
 members = [
 	"node",
 	"runtime",
+	"client/consensus/manual-seal",
 ]
 exclude = [
 	"contracts",
