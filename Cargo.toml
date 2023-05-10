@@ -2,6 +2,7 @@
 members = [
 	"node",
 	"runtime",
+	"frame/*",
 	"client/consensus/manual-seal",
 ]
 exclude = [
