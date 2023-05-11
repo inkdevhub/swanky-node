@@ -631,6 +631,12 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl pallet_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance> for Runtime {
+		fn account(account_id: AccountId) -> pallet_balances::AccountData<Balance> {
+			Balances::account(&account_id)
+		}
+	}
+
 	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash> for Runtime {
 		fn call(
 			origin: AccountId,

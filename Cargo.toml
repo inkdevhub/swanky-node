@@ -2,7 +2,9 @@
 members = [
 	"node",
 	"runtime",
-	"frame/*",
+	"frame/balances",
+	"frame/balances/rpc",
+	"frame/balances/rpc/runtime-api",
 	"client/consensus/manual-seal",
 ]
 exclude = [

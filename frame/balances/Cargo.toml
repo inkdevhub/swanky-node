@@ -14,6 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive", "max-encoded-len"] }
+serde = { version = "1.0.136", optional = true }
 log = { version = "0.4.17", default-features = false }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false, optional = true }
@@ -35,6 +36,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"log/std",
+	"serde",
 	"scale-info/std",
 	"sp-runtime/std",
 	"sp-std/std",

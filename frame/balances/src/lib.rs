@@ -181,6 +181,8 @@ use frame_support::{
 };
 use frame_system as system;
 use scale_info::TypeInfo;
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
 use sp_runtime::{
 	traits::{
 		AtLeast32BitUnsigned, Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize,
@@ -685,6 +687,7 @@ pub struct ReserveData<ReserveIdentifier, Balance> {
 
 /// All balance information for an account.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct AccountData<Balance> {
 	/// Non-reserved part of the balance. There may still be restrictions on this, but it is the
 	/// total pool what may in principle be transferred, reserved and used for tipping.
@@ -765,7 +768,8 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	}
 
 	/// Get both the free and reserved balances of an account.
-	fn account(who: &T::AccountId) -> AccountData<T::Balance> {
+	/// Converted from private to public function.
+	pub fn account(who: &T::AccountId) -> AccountData<T::Balance> {
 		T::AccountStore::get(who)
 	}
 

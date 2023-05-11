@@ -4349,10 +4349,37 @@ dependencies = [
  "pallet-transaction-payment",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-balances-rpc"
+version = "4.0.0-dev"
+dependencies = [
+ "jsonrpsee",
+ "pallet-balances-rpc-runtime-api",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-weights",
+]
+
+[[package]]
+name = "pallet-balances-rpc-runtime-api"
+version = "4.0.0-dev"
+dependencies = [
+ "pallet-balances",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-runtime",
+ "sp-weights",
 ]
 
 [[package]]
@@ -8154,6 +8181,7 @@ dependencies = [
  "futures",
  "jsonrpsee",
  "log",
+ "pallet-balances-rpc",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
@@ -8200,6 +8228,7 @@ dependencies = [
  "log",
  "pallet-assets",
  "pallet-balances",
+ "pallet-balances-rpc-runtime-api",
  "pallet-chain-extension-assets",
  "pallet-chain-extension-dapps-staking",
  "pallet-contracts",
