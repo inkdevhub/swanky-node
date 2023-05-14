@@ -321,8 +321,7 @@ pub mod pallet {
 			#[pallet::compact] new_reserved: T::Balance,
 		) -> DispatchResultWithPostInfo {
 			// Converted from `ensure_root` to `ensure_none` for local development purposes.
-			// Unsigned extrinsic can alter the balance of any account.
-			ensure_none(origin)?;
+			ensure_root(origin)?;
 			let who = T::Lookup::lookup(who)?;
 			let existential_deposit = T::ExistentialDeposit::get();
 
@@ -359,12 +358,70 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// Set the free balances of a given account.
+		///
+		/// This will alter `FreeBalance` and `ReservedBalance` in storage. it will
+		/// also alter the total issuance of the system (`TotalIssuance`) appropriately.
+		/// If the new free or reserved balance is below the existential deposit,
+		/// it will reset the account nonce (`frame_system::AccountNonce`).
+		///
+		/// The dispatch origin for this call is `root`.
+		#[pallet::call_index(2)]
+		#[pallet::weight(
+			T::WeightInfo::set_balance_creating() // Creates a new account.
+				.max(T::WeightInfo::set_balance_killing()) // Kills an existing account.
+		)]
+		pub fn set_free_balance(
+			origin: OriginFor<T>,
+			who: AccountIdLookupOf<T>,
+			#[pallet::compact] new_free: T::Balance,
+		) -> DispatchResultWithPostInfo {
+			// Converted from `ensure_root` to `ensure_none` for local development purposes.
+			// Unsigned extrinsic can alter the balance of any account.
+			ensure_none(origin)?;
+			let who = T::Lookup::lookup(who)?;
+			let existential_deposit = T::ExistentialDeposit::get();
+
+			// First we try to modify the account's balance to the forced balance.
+			let (old_free, old_reserved, new_free, new_reserved) = Self::mutate_account(&who, |account| {
+				let old_free = account.free;
+				let old_reserved = account.reserved;
+
+				let wipeout = new_free + account.reserved < existential_deposit;
+
+				let new_free = if wipeout { Zero::zero() } else { new_free };
+				let new_reserved = if wipeout { Zero::zero() } else { account.reserved };
+
+				account.free = new_free;
+				account.reserved = new_reserved;
+
+				(old_free, old_reserved, new_free, new_reserved)
+			})?;
+
+			// This will adjust the total issuance, which was not done by the `mutate_account`
+			// above.
+			if new_free > old_free {
+				mem::drop(PositiveImbalance::<T, I>::new(new_free - old_free));
+			} else if new_free < old_free {
+				mem::drop(NegativeImbalance::<T, I>::new(old_free - new_free));
+			}
+
+			if new_reserved > old_reserved {
+				mem::drop(PositiveImbalance::<T, I>::new(new_reserved - old_reserved));
+			} else if new_reserved < old_reserved {
+				mem::drop(NegativeImbalance::<T, I>::new(old_reserved - new_reserved));
+			}
+
+			Self::deposit_event(Event::BalanceSet { who, free: new_free, reserved: new_reserved });
+			Ok(().into())
+		}
+
 		/// Exactly as `transfer`, except the origin must be root and the source account may be
 		/// specified.
 		/// ## Complexity
 		/// - Same as transfer, but additional read and write because the source account is not
 		///   assumed to be in the overlay.
-		#[pallet::call_index(2)]
+		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::force_transfer())]
 		pub fn force_transfer(
 			origin: OriginFor<T>,
@@ -390,7 +447,7 @@ pub mod pallet {
 		/// 99% of the time you want [`transfer`] instead.
 		///
 		/// [`transfer`]: struct.Pallet.html#method.transfer
-		#[pallet::call_index(3)]
+		#[pallet::call_index(4)]
 		#[pallet::weight(T::WeightInfo::transfer_keep_alive())]
 		pub fn transfer_keep_alive(
 			origin: OriginFor<T>,
@@ -419,7 +476,7 @@ pub mod pallet {
 		///   transfer everything except at least the existential deposit, which will guarantee to
 		///   keep the sender account alive (true). ## Complexity
 		/// - O(1). Just like transfer, but reading the user's transferable balance first.
-		#[pallet::call_index(4)]
+		#[pallet::call_index(5)]
 		#[pallet::weight(T::WeightInfo::transfer_all())]
 		pub fn transfer_all(
 			origin: OriginFor<T>,
@@ -438,7 +495,7 @@ pub mod pallet {
 		/// Unreserve some balance from a user by force.
 		///
 		/// Can only be called by ROOT.
-		#[pallet::call_index(5)]
+		#[pallet::call_index(6)]
 		#[pallet::weight(T::WeightInfo::force_unreserve())]
 		pub fn force_unreserve(
 			origin: OriginFor<T>,

@@ -635,6 +635,12 @@ impl_runtime_apis! {
 		fn account(account_id: AccountId) -> pallet_balances::AccountData<Balance> {
 			Balances::account(&account_id)
 		}
+
+		fn get_set_free_balance_extrinsic(account_id: AccountId, free_balance: Balance) -> <Block as BlockT>::Extrinsic {
+			UncheckedExtrinsic::new_unsigned(
+				pallet_balances::Call::<Runtime>::set_free_balance { who: sp_runtime::MultiAddress::Id(account_id), new_free: free_balance }.into()
+			)
+		}
 	}
 
 	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash> for Runtime {

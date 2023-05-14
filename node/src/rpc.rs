@@ -56,7 +56,7 @@ where
 
 	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
-	io.merge(Balances::new(client.clone()).into_rpc())?;
+	io.merge(Balances::new(client.clone(), pool.clone()).into_rpc())?;
 
 	// The final RPC extension receives commands for the manual seal consensus engine.
 	io.merge(ManualSeal::new(command_sink).into_rpc())?;
