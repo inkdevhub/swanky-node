@@ -2,7 +2,7 @@
 
 use codec::Codec;
 pub use pallet_balances::AccountData;
-use sp_runtime::{traits::Block as BlockT};
+use sp_runtime::traits::Block as BlockT;
 
 sp_api::decl_runtime_apis! {
 	pub trait BalancesApi<AccountId, Balance>

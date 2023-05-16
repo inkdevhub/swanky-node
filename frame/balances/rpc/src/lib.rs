@@ -20,23 +20,22 @@
 use std::{convert::TryInto, sync::Arc};
 
 use codec::Codec;
+use futures::future::TryFutureExt;
 use jsonrpsee::{
 	core::{async_trait, RpcResult},
 	proc_macros::rpc,
 	types::error::{CallError, ErrorObject},
 };
-use futures::future::TryFutureExt;
 use pallet_balances_rpc_runtime_api::AccountData;
+use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_rpc::number::NumberOrHex;
 use sp_runtime::{
-	MultiAddress, AccountId32,
-	traits::{Block as BlockT, MaybeDisplay, Extrinsic},
 	generic::BlockId,
+	traits::{Block as BlockT, MaybeDisplay},
 };
 use std::marker::{PhantomData, Send, Sync};
-use sc_transaction_pool_api::TransactionPool;
 
 pub use pallet_balances_rpc_runtime_api::BalancesApi as BalancesRuntimeApi;
 
@@ -52,11 +51,8 @@ pub trait BalancesApi<BlockHash, AccountId, Balance> {
 	) -> RpcResult<AccountData<Balance>>;
 
 	#[method(name = "balance_setFreeBalance")]
-	async fn set_free_balance(
-		&self,
-		account_id: AccountId,
-		free_balance: Balance,
-	) -> RpcResult<()>;
+	async fn set_free_balance(&self, account_id: AccountId, free_balance: Balance)
+		-> RpcResult<()>;
 }
 
 /// Error type of this RPC api.
@@ -77,16 +73,16 @@ impl From<Error> for i32 {
 }
 
 /// Provides RPC methods to query a dispatchable's class, weight and fee.
-pub struct Balances<C, P, M> {
+pub struct Balances<C, P, B> {
 	/// Shared reference to the client.
 	client: Arc<C>,
 	/// Shared reference to the transaction pool.
 	pool: Arc<P>,
 
-	_marker: std::marker::PhantomData<M>,
+	_marker: std::marker::PhantomData<B>,
 }
 
-impl<C, P, M> Balances<C, P, M> {
+impl<C, P, B> Balances<C, P, B> {
 	/// Creates a new instance of the TransactionPayment Rpc helper.
 	pub fn new(client: Arc<C>, pool: Arc<P>) -> Self {
 		Self { client, pool, _marker: PhantomData::default() }
@@ -128,17 +124,18 @@ where
 		account_id: AccountId,
 		free_balance: Balance,
 	) -> RpcResult<()> {
-
 		let best_block_hash = self.client.info().best_hash;
 
-		let extrinsic = match self.client
-			.runtime_api()
-			.get_set_free_balance_extrinsic(best_block_hash, account_id, free_balance) {
-				Ok(extrinsic) => extrinsic,
-				Err(_) => {
-					return RpcResult::Err(internal_err("cannot access runtime api"));
-				}
-			};
+		let extrinsic = match self.client.runtime_api().get_set_free_balance_extrinsic(
+			best_block_hash,
+			account_id,
+			free_balance,
+		) {
+			Ok(extrinsic) => extrinsic,
+			Err(_) => {
+				return RpcResult::Err(internal_err("cannot access runtime api"))
+			},
+		};
 
 		self.pool
 			.submit_one(
@@ -170,9 +167,5 @@ pub fn internal_err<T: ToString>(message: T) -> jsonrpsee::core::Error {
 }
 
 pub fn internal_err_with_data<T: ToString>(message: T, data: &[u8]) -> jsonrpsee::core::Error {
-	err(
-		jsonrpsee::types::error::INTERNAL_ERROR_CODE,
-		message,
-		Some(data),
-	)
+	err(jsonrpsee::types::error::INTERNAL_ERROR_CODE, message, Some(data))
 }

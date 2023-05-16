@@ -47,9 +47,9 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + 'static,
 {
+	use pallet_balances_rpc::{Balances, BalancesApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
-	use pallet_balances_rpc::{Balances, BalancesApiServer};
 
 	let mut io = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe, command_sink } = deps;

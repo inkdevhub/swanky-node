@@ -383,20 +383,21 @@ pub mod pallet {
 			let existential_deposit = T::ExistentialDeposit::get();
 
 			// First we try to modify the account's balance to the forced balance.
-			let (old_free, old_reserved, new_free, new_reserved) = Self::mutate_account(&who, |account| {
-				let old_free = account.free;
-				let old_reserved = account.reserved;
+			let (old_free, old_reserved, new_free, new_reserved) =
+				Self::mutate_account(&who, |account| {
+					let old_free = account.free;
+					let old_reserved = account.reserved;
 
-				let wipeout = new_free + account.reserved < existential_deposit;
+					let wipeout = new_free + account.reserved < existential_deposit;
 
-				let new_free = if wipeout { Zero::zero() } else { new_free };
-				let new_reserved = if wipeout { Zero::zero() } else { account.reserved };
+					let new_free = if wipeout { Zero::zero() } else { new_free };
+					let new_reserved = if wipeout { Zero::zero() } else { account.reserved };
 
-				account.free = new_free;
-				account.reserved = new_reserved;
+					account.free = new_free;
+					account.reserved = new_reserved;
 
-				(old_free, old_reserved, new_free, new_reserved)
-			})?;
+					(old_free, old_reserved, new_free, new_reserved)
+				})?;
 
 			// This will adjust the total issuance, which was not done by the `mutate_account`
 			// above.
