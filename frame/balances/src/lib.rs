@@ -267,21 +267,19 @@ pub mod pallet {
 		type Call = Call<T>;
 
 		fn validate_unsigned(source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			if let Call::set_free_balance { .. } = call {
+			if let Call::set_free_balance { who, new_free, magic_number } = call {
 				match source {
 					TransactionSource::Local | TransactionSource::InBlock => {
-						let next_unsigned_index = <NextUnsignedIndex<T>>::get();
-
 						ValidTransaction::with_tag_prefix("BalancesOperations")
 							// We assign the maximum priority for any equivocation report.
 							.priority(TransactionPriority::max_value())
-							// Usually, we need to make sure a unique unsigned extrinsic get
-							// processed only once by adding identifier to the unsigned it.
+							// Usually, we need to make sure only one transaction get inside the
+							// transaction pool. So an identifier needed.
 							// In swanky-node case, we don't have any info that can identify which
 							// set_free_balance call if reciever and amount is the same,
 							// so recording unsigned extrinsic index each time and use it as an
 							// identifier.
-							.and_provides(next_unsigned_index)
+							.and_provides((who, new_free, magic_number))
 							.propagate(true)
 							.build()
 					},
@@ -419,9 +417,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			who: AccountIdLookupOf<T>,
 			#[pallet::compact] new_free: T::Balance,
-			// This value never be used, but we can expect different TxHash of Unsigned Extrinsic even if the value of `(who, new_free)` is same.
-			// No need to care about this with Signed Extrinsic because nonce value is always different.
-			// If the TxHash is the same, transaction pool will reject the second one. `_magic_value` can avoid that restriction.
+			// This value never be used, but we can expect different TxHash of Unsigned Extrinsic
+			// even if the value of `(who, new_free)` is same. No need to care about this with
+			// Signed Extrinsic because nonce value is always different. If the TxHash is the same,
+			// transaction pool will reject the second one. `_magic_value` can avoid that
+			// restriction.
 			//
 			// For example, with magic number, below senario is possible
 			// 1. Set Alice's free balance to 100.
@@ -467,8 +467,6 @@ pub mod pallet {
 			} else if new_reserved < old_reserved {
 				mem::drop(NegativeImbalance::<T, I>::new(old_reserved - new_reserved));
 			}
-
-			NextUnsignedIndex::<T, I>::put(<NextUnsignedIndex<T, I>>::get().saturating_add(1));
 
 			Self::deposit_event(Event::BalanceSet { who, free: new_free, reserved: new_reserved });
 			Ok(().into())
@@ -682,10 +680,6 @@ pub mod pallet {
 		BoundedVec<ReserveData<T::ReserveIdentifier, T::Balance>, T::MaxReserves>,
 		ValueQuery,
 	>;
-
-	// [swanky node specific]
-	#[pallet::storage]
-	pub type NextUnsignedIndex<T: Config<I>, I: 'static = ()> = StorageValue<_, u64, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
