@@ -637,8 +637,9 @@ impl_runtime_apis! {
 		}
 
 		fn get_set_free_balance_extrinsic(account_id: AccountId, free_balance: Balance) -> <Block as BlockT>::Extrinsic {
+			let timestamp = Timestamp::now();
 			UncheckedExtrinsic::new_unsigned(
-				pallet_balances::Call::<Runtime>::set_free_balance { who: sp_runtime::MultiAddress::Id(account_id), new_free: free_balance }.into()
+				pallet_balances::Call::<Runtime>::set_free_balance { who: sp_runtime::MultiAddress::Id(account_id), new_free: free_balance, magic_number: timestamp.into() }.into()
 			)
 		}
 	}

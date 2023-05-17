@@ -419,6 +419,16 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			who: AccountIdLookupOf<T>,
 			#[pallet::compact] new_free: T::Balance,
+			// This value never be used, but we can expect different TxHash of Unsigned Extrinsic even if the value of `(who, new_free)` is same.
+			// No need to care about this with Signed Extrinsic because nonce value is always different.
+			// If the TxHash is the same, transaction pool will reject the second one. `_magic_value` can avoid that restriction.
+			//
+			// For example, with magic number, below senario is possible
+			// 1. Set Alice's free balance to 100.
+			// 2. Set Alice's free balance to 120.
+			// 1. Set Alice's free balance to 100 again.
+			// This is because Unsigned Extrinsic Hash of 1 and 3 are different.
+			#[pallet::compact] _magic_number: u64,
 		) -> DispatchResultWithPostInfo {
 			// Use `ensure_none` for local development purposes. Accepting unsigned Extrinsics.
 			// Unsigned extrinsic can alter the balance of any account.
