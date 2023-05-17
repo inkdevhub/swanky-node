@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use futures::channel::mpsc::Sender;
 use jsonrpsee::RpcModule;
+use sp_runtime::traits::Block as BlockT;
 use swanky_runtime::{opaque::Block, AccountId, Balance, Hash, Index};
 
 use sc_consensus_manual_seal::{
@@ -45,7 +46,7 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: pallet_balances_rpc::BalancesRuntimeApi<Block, AccountId, Balance>,
 	C::Api: BlockBuilder<Block>,
-	P: TransactionPool + 'static,
+	P: TransactionPool<Block = Block, Hash = <Block as BlockT>::Hash> + 'static,
 {
 	use pallet_balances_rpc::{Balances, BalancesApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};

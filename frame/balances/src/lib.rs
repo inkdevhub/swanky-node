@@ -259,6 +259,47 @@ pub mod pallet {
 	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
+	/// [Swanky Node specific]
+	/// We use unsigned extrinsic for `set_free_balance` call.
+	/// Modification added to the original pallet balances.
+	#[pallet::validate_unsigned]
+	impl<T: Config> ValidateUnsigned for Pallet<T> {
+		type Call = Call<T>;
+
+		fn validate_unsigned(source: TransactionSource, call: &Self::Call) -> TransactionValidity {
+			if let Call::set_free_balance { .. } = call {
+				match source {
+					TransactionSource::Local | TransactionSource::InBlock => {
+						let next_unsigned_index = <NextUnsignedIndex<T>>::get();
+
+						ValidTransaction::with_tag_prefix("BalancesOperations")
+							// We assign the maximum priority for any equivocation report.
+							.priority(TransactionPriority::max_value())
+							// Usually, we need to make sure a unique unsigned extrinsic get
+							// processed only once by adding identifier to the unsigned it.
+							// In swanky-node case, we don't have any info that can identify which
+							// set_free_balance call if reciever and amount is the same,
+							// so recording unsigned extrinsic index each time and use it as an
+							// identifier.
+							.and_provides(next_unsigned_index)
+							.propagate(true)
+							.build()
+					},
+					_ => InvalidTransaction::Call.into(),
+				}
+			} else {
+				InvalidTransaction::Call.into()
+			}
+		}
+
+		fn pre_dispatch(call: &Self::Call) -> Result<(), TransactionValidityError> {
+			match call {
+				Call::set_free_balance { .. } => Ok(()),
+				_ => Err(InvalidTransaction::Call.into()),
+			}
+		}
+	}
+
 	#[pallet::call]
 	impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		/// Transfer some liquid free balance to another account.
@@ -358,11 +399,14 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// [Swanky Node specific]
 		/// Set the free balances of a given account.
+		/// This call is only for local development purpose which doesn't exist in official balances
+		/// pallet.
 		///
-		/// This will alter `FreeBalance` and `ReservedBalance` in storage. it will
-		/// also alter the total issuance of the system (`TotalIssuance`) appropriately.
-		/// If the new free or reserved balance is below the existential deposit,
+		/// This will alter `FreeBalance` and `ReservedBalance` (in particular conditions) in
+		/// storage. it will also alter the total issuance of the system (`TotalIssuance`)
+		/// appropriately. If the new free or reserved balance is below the existential deposit,
 		/// it will reset the account nonce (`frame_system::AccountNonce`).
 		///
 		/// The dispatch origin for this call is `root`.
@@ -376,7 +420,7 @@ pub mod pallet {
 			who: AccountIdLookupOf<T>,
 			#[pallet::compact] new_free: T::Balance,
 		) -> DispatchResultWithPostInfo {
-			// Converted from `ensure_root` to `ensure_none` for local development purposes.
+			// Use `ensure_none` for local development purposes. Accepting unsigned Extrinsics.
 			// Unsigned extrinsic can alter the balance of any account.
 			ensure_none(origin)?;
 			let who = T::Lookup::lookup(who)?;
@@ -391,6 +435,7 @@ pub mod pallet {
 					let wipeout = new_free + account.reserved < existential_deposit;
 
 					let new_free = if wipeout { Zero::zero() } else { new_free };
+					// No change on reserved_balance unless account is wiped out.
 					let new_reserved = if wipeout { Zero::zero() } else { account.reserved };
 
 					account.free = new_free;
@@ -412,6 +457,8 @@ pub mod pallet {
 			} else if new_reserved < old_reserved {
 				mem::drop(NegativeImbalance::<T, I>::new(old_reserved - new_reserved));
 			}
+
+			NextUnsignedIndex::<T, I>::put(<NextUnsignedIndex<T, I>>::get().saturating_add(1));
 
 			Self::deposit_event(Event::BalanceSet { who, free: new_free, reserved: new_reserved });
 			Ok(().into())
@@ -625,6 +672,11 @@ pub mod pallet {
 		BoundedVec<ReserveData<T::ReserveIdentifier, T::Balance>, T::MaxReserves>,
 		ValueQuery,
 	>;
+
+	// [swanky node specific]
+	#[pallet::storage]
+	#[pallet::getter(fn next_unsigned_index)] // TODO: remove getter
+	pub type NextUnsignedIndex<T: Config<I>, I: 'static = ()> = StorageValue<_, u64, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {

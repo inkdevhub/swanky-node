@@ -35,7 +35,7 @@ use sp_runtime::{
 	generic::BlockId,
 	traits::{Block as BlockT, MaybeDisplay},
 };
-use std::marker::{PhantomData, Send, Sync};
+use std::marker::{Send, Sync};
 
 pub use pallet_balances_rpc_runtime_api::BalancesApi as BalancesRuntimeApi;
 
@@ -73,37 +73,34 @@ impl From<Error> for i32 {
 }
 
 /// Provides RPC methods to query a dispatchable's class, weight and fee.
-pub struct Balances<C, P, B> {
+pub struct Balances<C, P> {
 	/// Shared reference to the client.
 	client: Arc<C>,
 	/// Shared reference to the transaction pool.
 	pool: Arc<P>,
-
-	_marker: std::marker::PhantomData<B>,
 }
 
-impl<C, P, B> Balances<C, P, B> {
+impl<C, P> Balances<C, P> {
 	/// Creates a new instance of the TransactionPayment Rpc helper.
 	pub fn new(client: Arc<C>, pool: Arc<P>) -> Self {
-		Self { client, pool, _marker: PhantomData::default() }
+		Self { client, pool }
 	}
 }
 
 #[async_trait]
-impl<Client, Pool, Block, AccountId, Balance>
-	BalancesApiServer<<Block as BlockT>::Hash, AccountId, Balance> for Balances<Client, Pool, Block>
+impl<Client, Pool, AccountId, Balance>
+	BalancesApiServer<<Pool::Block as BlockT>::Hash, AccountId, Balance> for Balances<Client, Pool>
 where
-	Block: BlockT,
-	Client: Send + Sync + 'static + ProvideRuntimeApi<Block> + HeaderBackend<Block>,
-	Client::Api: BalancesRuntimeApi<Block, AccountId, Balance>,
-	Pool: TransactionPool<Block = Block> + 'static,
+	Client: Send + Sync + 'static + ProvideRuntimeApi<Pool::Block> + HeaderBackend<Pool::Block>,
+	Client::Api: BalancesRuntimeApi<Pool::Block, AccountId, Balance>,
+	Pool: TransactionPool + 'static,
 	AccountId: Clone + MaybeDisplay + Codec + Send + 'static,
 	Balance: Codec + MaybeDisplay + Copy + TryInto<NumberOrHex> + Send + Sync + 'static,
 {
 	fn get_account(
 		&self,
 		account_id: AccountId,
-		at: Option<Block::Hash>,
+		at: Option<<Pool::Block as BlockT>::Hash>,
 	) -> RpcResult<AccountData<Balance>> {
 		let runtime_api = self.client.runtime_api();
 		let at_hash = at.unwrap_or_else(|| self.client.info().best_hash);
@@ -126,15 +123,16 @@ where
 	) -> RpcResult<()> {
 		let best_block_hash = self.client.info().best_hash;
 
-		let extrinsic = match self.client.runtime_api().get_set_free_balance_extrinsic(
-			best_block_hash,
-			account_id,
-			free_balance,
-		) {
+		// TODO: Find a way to construct Balances Call which can casted to `<<Pool as
+		// TransactionPool>::Block as BlockT>::Extrinsic` without using runtime_api. Is that
+		// possible?
+		let extrinsic: <<Pool as TransactionPool>::Block as BlockT>::Extrinsic = match self
+			.client
+			.runtime_api()
+			.get_set_free_balance_extrinsic(best_block_hash, account_id, free_balance)
+		{
 			Ok(extrinsic) => extrinsic,
-			Err(_) => {
-				return RpcResult::Err(internal_err("cannot access runtime api"))
-			},
+			Err(_) => return RpcResult::Err(internal_err("cannot access runtime api")),
 		};
 
 		self.pool
