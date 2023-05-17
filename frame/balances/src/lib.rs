@@ -685,7 +685,6 @@ pub mod pallet {
 
 	// [swanky node specific]
 	#[pallet::storage]
-	#[pallet::getter(fn next_unsigned_index)] // TODO: remove getter
 	pub type NextUnsignedIndex<T: Config<I>, I: 'static = ()> = StorageValue<_, u64, ValueQuery>;
 
 	#[pallet::genesis_config]
