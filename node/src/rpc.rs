@@ -56,7 +56,7 @@ where
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	// The final RPC extension receives commands for the manual seal consensus engine.
-	io.merge(ManualSeal::new(command_sink).into_rpc())?;
+	io.merge(ManualSeal::new(client, command_sink).into_rpc())?;
 
 	Ok(io)
 }
