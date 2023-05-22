@@ -207,7 +207,8 @@ where
 
 		println!("Diff: {:?}", diff);
 
-		let reverted = self.backend
+		let reverted = self
+			.backend
 			.revert(diff, true)
 			.map_err(|e| JsonRpseeError::Custom(format!("Backend Revert Error: {}", e)))?;
 
