@@ -22,9 +22,11 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// Full client dependencies.
-pub struct FullDeps<C, P> {
+pub struct FullDeps<C, B, P> {
 	/// The client instance to use.
 	pub client: Arc<C>,
+	/// The backend instance to use.
+	pub backend: Arc<B>,
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
 	/// Whether to deny unsafe calls
@@ -34,8 +36,8 @@ pub struct FullDeps<C, P> {
 }
 
 /// Instantiate all full RPC extensions.
-pub fn create_full<C, P>(
-	deps: FullDeps<C, P>,
+pub fn create_full<C, B, P>(
+	deps: FullDeps<C, B, P>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>,
@@ -44,19 +46,20 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: BlockBuilder<Block>,
+	B: sc_client_api::backend::Backend<Block> + Send + Sync + 'static,
 	P: TransactionPool + 'static,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut io = RpcModule::new(());
-	let FullDeps { client, pool, deny_unsafe, command_sink } = deps;
+	let FullDeps { client, backend, pool, deny_unsafe, command_sink } = deps;
 
 	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	// The final RPC extension receives commands for the manual seal consensus engine.
-	io.merge(ManualSeal::new(client, command_sink).into_rpc())?;
+	io.merge(ManualSeal::new(client, backend, command_sink).into_rpc())?;
 
 	Ok(io)
 }

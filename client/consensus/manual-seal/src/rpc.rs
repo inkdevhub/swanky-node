@@ -90,8 +90,9 @@ where
 }
 
 /// A struct that implements the [`ManualSealApiServer`].
-pub struct ManualSeal<Block: BlockT, Client> {
+pub struct ManualSeal<Block: BlockT, Client, Backend> {
 	client: Arc<Client>,
+	backend: Arc<Backend>,
 	import_block_channel: mpsc::Sender<EngineCommand<Block::Hash>>,
 }
 
@@ -104,23 +105,25 @@ pub struct CreatedBlock<Hash> {
 	pub aux: ImportedAux,
 }
 
-impl<Block: BlockT, Client> ManualSeal<Block, Client> {
+impl<Block: BlockT, Client, Backend> ManualSeal<Block, Client, Backend> {
 	/// Create new `ManualSeal` with the given reference to the client.
 	pub fn new(
 		client: Arc<Client>,
+		backend: Arc<Backend>,
 		import_block_channel: mpsc::Sender<EngineCommand<Block::Hash>>,
 	) -> Self {
-		Self { client, import_block_channel }
+		Self { client, backend, import_block_channel }
 	}
 }
 
 #[async_trait]
-impl<Block, Client> ManualSealApiServer<Block> for ManualSeal<Block, Client>
+impl<Block, Client, Backend> ManualSealApiServer<Block> for ManualSeal<Block, Client, Backend>
 where
 	Block: BlockT,
 	Client: sp_api::ProvideRuntimeApi<Block>,
 	Client: HeaderBackend<Block>,
 	Client: Send + Sync + 'static,
+	Backend: sc_client_api::backend::Backend<Block> + Send + Sync + 'static,
 {
 	async fn create_block(
 		&self,
@@ -193,6 +196,23 @@ where
 		&self,
 		height: <<Block as BlockT>::Header as Header>::Number,
 	) -> RpcResult<()> {
+		let best_number = self.client.info().best_number;
+		if height >= best_number {
+			return Err(JsonRpseeError::Custom(
+				"Target height is higher than current best height".into(),
+			))
+		}
+
+		let diff = best_number - height;
+
+		println!("Diff: {:?}", diff);
+
+		let reverted = self.backend
+			.revert(diff, true)
+			.map_err(|e| JsonRpseeError::Custom(format!("Backend Revert Error: {}", e)))?;
+
+		println!("Reverted: {:?}", reverted);
+
 		Ok(())
 	}
 }
