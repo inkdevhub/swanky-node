@@ -6,6 +6,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.39).
 - `grandpa` & `aura` consensus were removed. Instead, [`instant-seal`/`manual-seal`](https://github.com/AstarNetwork/swanky-node#consensus-manual-seal--instant-seal) & [`delayed-finalize`](https://github.com/AstarNetwork/swanky-node#consensus-delayed-finalize) are used.
   Blocks are sealed (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called. Blocks are finalized configured delay sec after blocks are sealed.
+- Users' account Balance manipulation
 - Block height manipulation. Developers can forward and revert blocks via RPC.
 - [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
 - [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
@@ -204,3 +205,39 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 #### Params
 - **Height**
   `height` denotes an integral value that represents the desired block height which the user intends to revert to. If the value is higher than current height, RPC returns an error.
+
+## Account Balance manipulation
+For local development purpose, developers can manipulate any users' account balance via RPC without requiring their accounts' signatures and transaction cost to pay.
+
+### Get Account Balance
+Getting users' account balance by `balance_getAccount` method.
+```bash
+curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"balance_getAccount",
+      "params": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", null]
+    }'
+```
+
+#### Params
+- **Account ID**
+  `account_id` is AccountID whose balance information you would like to check.
+
+### Set Free Balance
+Free balance is amount of unreserved token owner can freely spend. `balance_setFreeBalance` alters the amount of free token a specified account has.
+```bash
+curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"balance_setFreeBalance",
+      "params": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 120000000000000000000, null]
+    }'
+```
+
+#### Params
+- **Account ID**
+  `account_id` is `AccountID` whose balance you would like to modify.
+
+- **Free Balance**
+  `free_balance` is new Balance value you would like to set to accounts.
