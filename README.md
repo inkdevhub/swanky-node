@@ -7,6 +7,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - `grandpa` & `aura` consensus were removed. Instead, [`instant-seal`/`manual-seal`](https://github.com/AstarNetwork/swanky-node#consensus-manual-seal--instant-seal) & [`delayed-finalize`](https://github.com/AstarNetwork/swanky-node#consensus-delayed-finalize) are used.
   Blocks are sealed (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called. Blocks are finalized configured delay sec after blocks are sealed.
 - Users' account Balance manipulation
+- Block height manipulation. Developers can forward and revert blocks via RPC.
 - [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
 - [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
 - Pallet-assets chain-extension
@@ -166,6 +167,44 @@ By default, either manual or instant seal does not result in block finalization 
 ```
 
 In the above example, a setting of `5` seconds would result in the blocks being finalized five seconds after being sealed. In contrast, setting the value to `0` would lead to instant finalization, with the blocks being finalized immediately upon being sealed.
+
+## Block height manipulation
+Developers can forward blocks and revert blocks to requested block heights.
+
+### Forward blocks via RPC
+Forwarding blocks to requested block height by calling `engine_forwardBlocksTo`.
+
+```bash
+$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"engine_forwardBlocksTo",
+      "params": [120, null]
+    }'
+```
+
+#### Params
+- **Height**
+  `height` denotes an integral value that signifies the desired block height towards which the user intends to progress. If the value is lower than current height, RPC returns an error.
+
+### Revert blocks via RPC
+Reverting blocks to requested block height by calling `engine_revertBlocksTo`.
+
+Note that reverting finalized blocks only works when node is launched with archive mode `--state-pruning archive` (or `--pruning archive`) since reverting blocks requires past blocks' states.
+When blocks' states are pruned, RPC won't revert finalized blocks.
+
+```bash
+$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+     "jsonrpc":"2.0",
+      "id":1,
+      "method":"engine_revertBlocksTo",
+      "params": [50, null]
+    }'
+```
+
+#### Params
+- **Height**
+  `height` denotes an integral value that represents the desired block height which the user intends to revert to. If the value is higher than current height, RPC returns an error.
 
 ## Account Balance manipulation
 For local development purpose, developers can manipulate any users' account balance via RPC without requiring their accounts' signatures and transaction cost to pay.
