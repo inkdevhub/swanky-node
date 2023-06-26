@@ -1,4 +1,5 @@
 Modifications to the original Balances pallet are added.
+※ Comment out [swanky node specific] is added to those custom implementations. Source code under frame/balances/src other than [swanky node specific] is copied from Substrate.
 
 # Balances Module
 
