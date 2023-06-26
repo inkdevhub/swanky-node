@@ -6,7 +6,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 - [pallet-contracts](https://github.com/paritytech/substrate/tree/master/frame/contracts) (polkadot-0.9.39).
 - `grandpa` & `aura` consensus were removed. Instead, [`instant-seal`/`manual-seal`](https://github.com/AstarNetwork/swanky-node#consensus-manual-seal--instant-seal) & [`delayed-finalize`](https://github.com/AstarNetwork/swanky-node#consensus-delayed-finalize) are used.
   Blocks are sealed (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called. Blocks are finalized configured delay sec after blocks are sealed.
-- Users' account Balance manipuration
+- Users' account Balance manipulation
 - [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
 - [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
 - Pallet-assets chain-extension
@@ -167,8 +167,8 @@ By default, either manual or instant seal does not result in block finalization 
 
 In the above example, a setting of `5` seconds would result in the blocks being finalized five seconds after being sealed. In contrast, setting the value to `0` would lead to instant finalization, with the blocks being finalized immediately upon being sealed.
 
-## Account Balance manipuration
-For local development purpose, developpers can manipurate any users' account balance via RPC without requiring thier accounts' signatures and transaction cost to pay.
+## Account Balance manipulation
+For local development purpose, developers can manipulate any users' account balance via RPC without requiring their accounts' signatures and transaction cost to pay.
 
 ### Get Account Balance
 Getting users' account balance by `balance_getAccount` method.
