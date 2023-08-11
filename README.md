@@ -16,7 +16,7 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
 Swanky Node is optimized for local development, while removing unnecessary components such as P2P. Additional features and pallets, such as to interact between (Contract <-> Runtime), will be added in the future.
 
 ## Compatible ink! version
-ink! `v4.2.0` or lower is supported by pallet-contract polkadot-0.9.39 branch.
+Any ink! version from `v4.0.0` or `higher` is supported by pallet-contract polkadot-0.9.39 branch.
 
 ## Installation
 ### Download Binary
