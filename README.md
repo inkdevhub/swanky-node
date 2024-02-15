@@ -8,15 +8,16 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
   Blocks are sealed (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called. Blocks are finalized configured delay sec after blocks are sealed.
 - Users' account Balance manipulation
 - Block height manipulation. Developers can forward and revert blocks via RPC.
-- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
-- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
+- [pallet-dapps-staking](https://github.com/AstarNetwork/Astar/tree/temp/polkadot-v0.9.40/pallets/dapps-staking) and ChainExtension to interact with it.
+- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.40/frame/assets).
 - Pallet-assets chain-extension
 - dApps-staking chain-extension
 
 Swanky Node is optimized for local development, while removing unnecessary components such as P2P. Additional features and pallets, such as to interact between (Contract <-> Runtime), will be added in the future.
 
 ## Compatible ink! version
-Any ink! version from `v4.0.0` or `higher` is supported by pallet-contract polkadot-0.9.39 branch.
+
+Any ink! version from `v4.0.0` or `higher` is supported by pallet-contract polkadot-0.9.40 branch.
 
 ## Installation
 ### Download Binary

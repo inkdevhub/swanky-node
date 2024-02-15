@@ -1,6 +1,6 @@
 [package]
 name = "sc-consensus-manual-seal"
-version = "1.6.0"
+version = "1.7.0"
 authors = ["Astar Network"]
 description = "Manual sealing engine for Substrate"
 edition = "2021"

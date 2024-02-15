@@ -1,6 +1,6 @@
 [package]
 name = "swanky-node"
-version = "1.6.0"
+version = "1.7.0"
 description = "Local Substrate node for wasm contract development & testing"
 authors = ["Astar Network"]
 homepage = "https://astar.network"
@@ -22,9 +22,7 @@ futures = { version = '0.3.21' }
 log = { version = "0.4.17" }
 serde_json = "1.0"
 
-frame-system = "15.0.0"
-frame-support = "15.0.0"
-frame-metadata = "15.0.0"
+frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 sc-cli = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 sc-client-api = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
