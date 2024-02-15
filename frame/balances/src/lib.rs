@@ -179,6 +179,8 @@ use frame_support::{
 	},
 	WeakBoundedVec,
 };
+use frame_support::traits::tokens::{Fortitude, Preservation};
+use frame_support::traits::tokens::Fortitude::Polite;
 use frame_system as system;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -954,7 +956,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 		let new_total_balance = match account.total().checked_sub(&amount) {
 			Some(x) => x,
-			None => return WithdrawConsequence::NoFunds,
+			None => return WithdrawConsequence::Underflow,
 		};
 
 		// Provider restriction - total account balance cannot be reduced to zero if it cannot
@@ -975,7 +977,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		// Enough free funds to have them be reduced.
 		let new_free_balance = match account.free.checked_sub(&amount) {
 			Some(b) => b,
-			None => return WithdrawConsequence::NoFunds,
+			None => return WithdrawConsequence::Underflow,
 		};
 
 		// Eventual free funds must be no less than the frozen balance.
@@ -1187,19 +1189,32 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 	fn balance(who: &T::AccountId) -> Self::Balance {
 		Self::account(who).total()
 	}
-	fn reducible_balance(who: &T::AccountId, keep_alive: bool) -> Self::Balance {
+	fn reducible_balance(
+		who: &T::AccountId,
+		preservation: Preservation,
+		force: Fortitude,
+	) -> Self::Balance {
 		let a = Self::account(who);
-		// Liquid balance is what is neither reserved nor locked/frozen.
-		let liquid = a.free.saturating_sub(a.fee_frozen.max(a.misc_frozen));
-		if frame_system::Pallet::<T>::can_dec_provider(who) && !keep_alive {
-			liquid
-		} else {
-			// `must_remain_to_exist` is the part of liquid balance which must remain to keep total
-			// over ED.
-			let must_remain_to_exist =
-				T::ExistentialDeposit::get().saturating_sub(a.total() - liquid);
-			liquid.saturating_sub(must_remain_to_exist)
+		let mut untouchable = Zero::zero();
+		if force == Fortitude::Polite {
+			// Frozen balance applies to total. Anything on hold therefore gets discounted from the
+			// limit given by the freezes.
+			untouchable = a.frozen(Reasons::Fee).saturating_sub(a.reserved);
 		}
+		// If we want to keep our provider ref..
+		if preservation == Preservation::Preserve
+			// ..or we don't want the account to die and our provider ref is needed for it to live..
+			|| preservation == Preservation::Protect && !a.free.is_zero() &&
+			frame_system::Pallet::<T>::providers(who) == 1
+			// ..or we don't care about the account dying but our provider ref is required..
+			|| preservation == Preservation::Expendable && !a.free.is_zero() &&
+			!frame_system::Pallet::<T>::can_dec_provider(who)
+		{
+			// ..then the ED needed..
+			untouchable = untouchable.max(T::ExistentialDeposit::get());
+		}
+		// Liquid balance is what is neither on hold nor frozen/required for provider.
+		a.free.saturating_sub(untouchable)
 	}
 	fn can_deposit(who: &T::AccountId, amount: Self::Balance, mint: bool) -> DepositConsequence {
 		Self::deposit_consequence(who, amount, &Self::account(who), mint)
@@ -1270,8 +1285,8 @@ impl<T: Config<I>, I: 'static> fungible::Transfer<T::AccountId> for Pallet<T, I>
 }
 
 impl<T: Config<I>, I: 'static> fungible::Unbalanced<T::AccountId> for Pallet<T, I> {
-	fn set_balance(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		Self::mutate_account(who, |account| -> DispatchResult {
+	fn write_balance(who: &T::AccountId, amount: Self::Balance) -> Result<Option<Self::Balance>, DispatchError> {
+		Self::mutate_account(who, |account| -> Option<Self::Balance> {
 			// fungibles::Unbalanced::decrease_balance didn't check account.reserved
 			// free = new_balance - reserved
 			account.free =
@@ -1281,9 +1296,8 @@ impl<T: Config<I>, I: 'static> fungible::Unbalanced<T::AccountId> for Pallet<T, 
 				free: account.free,
 				reserved: account.reserved,
 			});
-
-			Ok(())
-		})?
+			Some(account.total())
+		})
 	}
 
 	fn set_total_issuance(amount: Self::Balance) {
