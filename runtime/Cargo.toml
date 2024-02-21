@@ -1,6 +1,6 @@
 [package]
 name = "swanky-runtime"
-version = "1.6.0"
+version = "1.7.0"
 description = "A fresh FRAME-based Substrate runtime, ready for hacking."
 authors = ["Astar Network"]
 homepage = "https://astar.network"
@@ -8,12 +8,13 @@ edition = "2021"
 license = "Unlicense"
 publish = false
 repository = "https://github.com/shunsukew/swanky-node/"
+build = "build.rs"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
@@ -22,7 +23,7 @@ frame-executive = { git = "https://github.com/paritytech/substrate", branch = "p
 frame-try-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43", optional = true }
 pallet-assets = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 pallet-balances = { path = "../frame/balances", default-features = false }
-pallet-insecure-randomness-collective-flip = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.39" }
+pallet-insecure-randomness-collective-flip = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 pallet-sudo = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43" }

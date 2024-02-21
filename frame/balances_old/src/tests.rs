@@ -668,7 +668,7 @@ macro_rules! decl_tests {
 		}
 
 		#[test]
-		#[should_panic = "duplicate balances in genesis."]
+		#[should_panic = "duplicate balances_old in genesis."]
 		fn cannot_set_genesis_value_twice() {
 			let mut t = frame_system::GenesisConfig::default().build_storage::<$test>().unwrap();
 			let _ = pallet_balances::GenesisConfig::<$test> {

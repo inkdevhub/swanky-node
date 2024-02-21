@@ -8,7 +8,7 @@ use sc_consensus_babe::{
 use sc_consensus_epochs::{
 	descendent_query, EpochHeader, SharedEpochChanges, ViableEpochDescriptor,
 };
-use sp_keystore::SyncCryptoStorePtr;
+use sp_keystore::KeystorePtr;
 use std::{marker::PhantomData, sync::Arc};
 
 use sc_consensus::{BlockImportParams, ForkChoiceStrategy, Verifier};
@@ -32,7 +32,7 @@ use sp_timestamp::TimestampInherentData;
 /// Intended for use with BABE runtimes.
 pub struct BabeConsensusDataProvider<B: BlockT, C, P> {
 	/// shared reference to keystore
-	keystore: SyncCryptoStorePtr,
+	keystore: KeystorePtr,
 
 	/// Shared reference to the client.
 	client: Arc<C>,
@@ -122,7 +122,7 @@ where
 {
 	pub fn new(
 		client: Arc<C>,
-		keystore: SyncCryptoStorePtr,
+		keystore: KeystorePtr,
 		epoch_changes: SharedEpochChanges<B, Epoch>,
 		authorities: Vec<(AuthorityId, BabeAuthorityWeight)>,
 	) -> Result<Self, Error> {

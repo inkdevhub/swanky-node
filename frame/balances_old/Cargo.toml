@@ -1,7 +1,7 @@
 [package]
 name = "pallet-balances"
 version = "4.0.0-dev"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["Astar Network <admin@parity.io>"]
 edition = "2021"
 license = "Apache-2.0"
 homepage = "https://substrate.io"
@@ -19,10 +19,9 @@ frame-support = { git = "https://github.com/paritytech/substrate", branch = "pol
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 log = { version = "0.4.17", default-features = false }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.151", optional = true }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
-serde = { version = "1.0.151", features = ["derive"] }
-paste = "1.0.12"
 
 [dev-dependencies]
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
@@ -37,6 +36,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"log/std",
+	"serde",
 	"scale-info/std",
 	"sp-runtime/std",
 	"sp-std/std",

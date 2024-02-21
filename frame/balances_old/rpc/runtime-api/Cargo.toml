@@ -14,10 +14,10 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-pallet-balances = { version = "4.0.0-dev", default-features = false, path = "../../../balances" }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
-sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+pallet-balances = { version = "4.0.0-dev", default-features = false, path = "../.." }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
+sp-weights = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 
 [features]
 default = ["std"]
