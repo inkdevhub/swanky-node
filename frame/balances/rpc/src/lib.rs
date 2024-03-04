@@ -20,7 +20,7 @@ use std::marker::{Send, Sync};
 
 pub use pallet_balances_rpc_runtime_api::BalancesApi as BalancesRuntimeApi;
 
-/// RPC trait that provides methods for interacting with the dev balances_old functionalities.
+/// RPC trait that provides methods for interacting with the dev balances functionalities.
 #[rpc(server)]
 #[async_trait]
 pub trait BalancesApi<BlockHash, AccountId, Balance> {

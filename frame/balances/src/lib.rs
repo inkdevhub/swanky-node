@@ -288,7 +288,7 @@ pub mod pallet {
 
 	/// [Swanky Node specific]
 	/// We use unsigned extrinsic for `set_free_balance` call.
-	/// Modification added to the original pallet balances_old.
+	/// Modification added to the original pallet balances.
 	#[pallet::validate_unsigned]
 	impl<T: Config> ValidateUnsigned for Pallet<T> {
 		type Call = Call<T>;
@@ -630,8 +630,8 @@ pub mod pallet {
 		}
 
 		/// [Swanky Node specific]
-		/// Set the free balances_old of a given account.
-		/// This call is only for local development purpose which doesn't exist in official balances_old
+		/// Set the free balances of a given account.
+		/// This call is only for local development purpose which doesn't exist in official balances
 		/// pallet.
 		///
 		/// This will alter `FreeBalance` and `ReservedBalance` (in particular conditions) in
