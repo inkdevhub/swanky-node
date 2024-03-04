@@ -286,6 +286,9 @@ pub mod pallet {
 	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
+	/// [Swanky Node specific]
+	/// We use unsigned extrinsic for `set_free_balance` call.
+	/// Modification added to the original pallet balances_old.
 	#[pallet::validate_unsigned]
 	impl<T: Config> ValidateUnsigned for Pallet<T> {
 		type Call = Call<T>;
@@ -626,9 +629,83 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// [Swanky Node specific]
+		/// Set the free balances_old of a given account.
+		/// This call is only for local development purpose which doesn't exist in official balances_old
+		/// pallet.
+		///
+		/// This will alter `FreeBalance` and `ReservedBalance` (in particular conditions) in
+		/// storage. it will also alter the total issuance of the system (`TotalIssuance`)
+		/// appropriately. If the new free or reserved balance is below the existential deposit,
+		/// it will reset the account nonce (`frame_system::AccountNonce`).
+		///
+		/// The dispatch origin for this call is `root`.
+		#[pallet::call_index(2)]
+		#[pallet::weight(
+			T::WeightInfo::force_set_balance_creating() // Creates a new account.
+				.max(T::WeightInfo::force_set_balance_killing()) // Kills an existing account.
+		)]
+		pub fn set_free_balance(
+			origin: OriginFor<T>,
+			who: AccountIdLookupOf<T>,
+			#[pallet::compact] new_free: T::Balance,
+			// This value never be used, but we can expect different TxHash of Unsigned Extrinsic
+			// even if the value of `(who, new_free)` is same. No need to care about this with
+			// Signed Extrinsic because nonce value is always different. If the TxHash is the same,
+			// transaction pool will reject the second one. `_magic_value` can avoid that
+			// restriction.
+			//
+			// For example, with magic number, below senario is possible
+			// 1. Set Alice's free balance to 100.
+			// 2. Set Alice's free balance to 120.
+			// 1. Set Alice's free balance to 100 again.
+			// This is because Unsigned Extrinsic Hash of 1 and 3 are different.
+			#[pallet::compact] _magic_number: u64,
+		) -> DispatchResultWithPostInfo {
+			// Use `ensure_none` for local development purposes. Accepting unsigned Extrinsics.
+			// Unsigned extrinsic can alter the balance of any account.
+			ensure_none(origin)?;
+			let who = T::Lookup::lookup(who)?;
+			let existential_deposit = T::ExistentialDeposit::get();
+
+			// First we try to modify the account's balance to the forced balance.
+			let (old_free, old_reserved, new_free, new_reserved) = Self::mutate_account_handling_dust(&who, |account| {
+				let old_free = account.free;
+				let old_reserved = account.reserved;
+
+				let wipeout = new_free < existential_deposit;
+
+				let new_free = if wipeout { Zero::zero() } else { new_free };
+				// No change on reserved_balance unless account is wiped out.
+				let new_reserved = if wipeout { Zero::zero() } else { old_reserved };
+
+				account.free = new_free;
+				account.reserved = new_reserved;
+				
+				(old_free, old_reserved, new_free, new_reserved)
+			})?;
+
+			// This will adjust the total issuance, which was not done by the `mutate_account`
+			// above.
+			if new_free > old_free {
+				mem::drop(PositiveImbalance::<T, I>::new(new_free - old_free));
+			} else if new_free < old_free {
+				mem::drop(NegativeImbalance::<T, I>::new(old_free - new_free));
+			}
+
+			if new_reserved > old_reserved {
+				mem::drop(PositiveImbalance::<T, I>::new(new_reserved - old_reserved));
+			} else if new_reserved < old_reserved {
+				mem::drop(NegativeImbalance::<T, I>::new(old_reserved - new_reserved));
+			}
+
+			Self::deposit_event(Event::BalanceSet { who, free: new_free });
+			Ok(().into())
+		}
+
 		/// Exactly as `transfer_allow_death`, except the origin must be root and the source account
 		/// may be specified.
-		#[pallet::call_index(2)]
+		#[pallet::call_index(3)]
 		pub fn force_transfer(
 			origin: OriginFor<T>,
 			source: AccountIdLookupOf<T>,
@@ -648,7 +725,7 @@ pub mod pallet {
 		/// 99% of the time you want [`transfer_allow_death`] instead.
 		///
 		/// [`transfer_allow_death`]: struct.Pallet.html#method.transfer
-		#[pallet::call_index(3)]
+		#[pallet::call_index(4)]
 		pub fn transfer_keep_alive(
 			origin: OriginFor<T>,
 			dest: AccountIdLookupOf<T>,
@@ -675,7 +752,7 @@ pub mod pallet {
 		///   of the funds the account has, causing the sender account to be killed (false), or
 		///   transfer everything except at least the existential deposit, which will guarantee to
 		///   keep the sender account alive (true).
-		#[pallet::call_index(4)]
+		#[pallet::call_index(5)]
 		pub fn transfer_all(
 			origin: OriginFor<T>,
 			dest: AccountIdLookupOf<T>,
@@ -701,7 +778,7 @@ pub mod pallet {
 		/// Unreserve some balance from a user by force.
 		///
 		/// Can only be called by ROOT.
-		#[pallet::call_index(5)]
+		#[pallet::call_index(6)]
 		pub fn force_unreserve(
 			origin: OriginFor<T>,
 			who: AccountIdLookupOf<T>,
@@ -721,7 +798,7 @@ pub mod pallet {
 		/// This will waive the transaction fee if at least all but 10% of the accounts needed to
 		/// be upgraded. (We let some not have to be upgraded just in order to allow for the
 		/// possibililty of churn).
-		#[pallet::call_index(6)]
+		#[pallet::call_index(7)]
 		#[pallet::weight(T::WeightInfo::upgrade_accounts(who.len() as u32))]
 		pub fn upgrade_accounts(
 			origin: OriginFor<T>,
@@ -749,7 +826,7 @@ pub mod pallet {
 		/// Alias for `transfer_allow_death`, provided only for name-wise compatibility.
 		///
 		/// WARNING: DEPRECATED! Will be released in approximately 3 months.
-		#[pallet::call_index(7)]
+		#[pallet::call_index(8)]
 		#[pallet::weight(T::WeightInfo::transfer_allow_death())]
 		pub fn transfer(
 			origin: OriginFor<T>,
@@ -765,7 +842,7 @@ pub mod pallet {
 		/// Set the regular balance of a given account.
 		///
 		/// The dispatch origin for this call is `root`.
-		#[pallet::call_index(8)]
+		#[pallet::call_index(9)]
 		#[pallet::weight(
 			T::WeightInfo::force_set_balance_creating() // Creates a new account.
 				.max(T::WeightInfo::force_set_balance_killing()) // Kills an existing account.
