@@ -46,7 +46,6 @@ use frame_system::{
 	EnsureSigned,
 };
 pub use pallet_balances::Call as BalancesCall;
-// pub use pallet_chain_extension_assets::weights::WeightInfo as ChainExtensionWeightInfo;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 

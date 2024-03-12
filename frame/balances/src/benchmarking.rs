@@ -160,7 +160,7 @@ mod benchmarks {
 		let recipient: T::AccountId = account("recipient", 0, SEED);
 		let recipient_lookup = T::Lookup::unlookup(recipient.clone());
 		let transfer_amount =
-			existential_deposit.saturating_mul((ED_MULTIPLIER - 1).into()) + 1u32.into();
+			existential_deposit.saturating_mul((ED_MULTIPLIER - 1).into()).saturating_add(1u32.into());
 
 		#[extrinsic_call]
 		_(RawOrigin::Root, source_lookup, recipient_lookup, transfer_amount);
@@ -232,7 +232,7 @@ mod benchmarks {
 
 		// Give some multiple of the existential deposit
 		let ed = T::ExistentialDeposit::get();
-		let balance = ed + ed;
+		let balance = ed.saturating_add(ed);
 		let _ = <Balances<T, I> as Currency<_>>::make_free_balance_be(&user, balance);
 
 		// Reserve the balance
@@ -244,7 +244,7 @@ mod benchmarks {
 		_(RawOrigin::Root, user_lookup, balance);
 
 		assert!(Balances::<T, I>::reserved_balance(&user).is_zero());
-		assert_eq!(Balances::<T, I>::free_balance(&user), ed + ed);
+		assert_eq!(Balances::<T, I>::free_balance(&user), ed.saturating_add(ed));
 
 		Ok(())
 	}
