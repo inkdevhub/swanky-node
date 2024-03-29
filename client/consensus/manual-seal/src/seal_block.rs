@@ -9,10 +9,10 @@ use sp_blockchain::HeaderBackend;
 use sp_consensus::{self, BlockOrigin, Environment, Proposer, SelectChain};
 use sp_inherents::{CreateInherentDataProviders, InherentDataProvider};
 use sp_runtime::traits::{Block as BlockT, Header as HeaderT};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 /// max duration for creating a proposal in secs
-pub const MAX_PROPOSAL_DURATION: u64 = 10;
+pub const MAX_PROPOSAL_DURATION: u64 = 180;
 
 /// params for sealing a new block
 pub struct SealBlockParams<'a, B: BlockT, BI, SC, C: ProvideRuntimeApi<B>, E, TP, CIDP, P> {
@@ -74,15 +74,16 @@ pub async fn seal_block<B, BI, SC, C, E, TP, CIDP, P>(
 {
 	let future = async {
 		if pool.status().ready == 0 && !create_empty {
-			return Err(Error::EmptyTransactionPool)
+			return Err(Error::EmptyTransactionPool);
 		}
 
 		// get the header to build this new block on.
 		// use the parent_hash supplied via `EngineCommand`
 		// or fetch the best_block.
 		let parent = match parent_hash {
-			Some(hash) =>
-				client.header(hash)?.ok_or_else(|| Error::BlockNotFound(format!("{}", hash)))?,
+			Some(hash) => {
+				client.header(hash)?.ok_or_else(|| Error::BlockNotFound(format!("{}", hash)))?
+			},
 			None => select_chain.best_chain().await?,
 		};
 
@@ -113,7 +114,7 @@ pub async fn seal_block<B, BI, SC, C, E, TP, CIDP, P>(
 			.await?;
 
 		if proposal.block.extrinsics().len() == inherents_len && !create_empty {
-			return Err(Error::EmptyTransactionPool)
+			return Err(Error::EmptyTransactionPool);
 		}
 
 		let (header, body) = proposal.block.deconstruct();
@@ -135,9 +136,10 @@ pub async fn seal_block<B, BI, SC, C, E, TP, CIDP, P>(
 		let mut post_header = header.clone();
 		post_header.digest_mut().logs.extend(params.post_digests.iter().cloned());
 
-		match block_import.import_block(params, HashMap::new()).await? {
-			ImportResult::Imported(aux) =>
-				Ok(CreatedBlock { hash: <B as BlockT>::Header::hash(&post_header), aux }),
+		match block_import.import_block(params).await? {
+			ImportResult::Imported(aux) => {
+				Ok(CreatedBlock { hash: <B as BlockT>::Header::hash(&post_header), aux })
+			},
 			other => Err(other.into()),
 		}
 	};

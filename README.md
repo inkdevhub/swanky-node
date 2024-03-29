@@ -8,15 +8,16 @@ Swanky node is a Substrate based blockchain configured to enable `pallet-contrac
   Blocks are sealed (1) as soon as a transaction get in the pool (2) when `engine_createBlock` RPC called. Blocks are finalized configured delay sec after blocks are sealed.
 - Users' account Balance manipulation
 - Block height manipulation. Developers can forward and revert blocks via RPC.
-- [pallet-dapps-staking](https://github.com/AstarNetwork/astar-frame/tree/polkadot-v0.9.39/frame/dapps-staking) and ChainExtension to interact with it.
-- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.39/frame/assets).
+- [pallet-dapps-staking](https://github.com/AstarNetwork/Astar/tree/v5.15.0/pallets/dapps-staking) and ChainExtension to interact with it.
+- [pallet-assets](https://github.com/paritytech/substrate/tree/polkadot-v0.9.43/frame/assets).
 - Pallet-assets chain-extension
 - dApps-staking chain-extension
 
 Swanky Node is optimized for local development, while removing unnecessary components such as P2P. Additional features and pallets, such as to interact between (Contract <-> Runtime), will be added in the future.
 
 ## Compatible ink! version
-Any ink! version from `v4.0.0` or `higher` is supported by pallet-contract polkadot-0.9.39 branch.
+
+Any ink! version from `v4.0.0` or `higher` is supported by pallet-contract polkadot-0.9.43 branch.
 
 ## Installation
 ### Download Binary
@@ -129,7 +130,7 @@ Swanky Node enables both Manual seal and Instant seal.
 We can tell the node to author a block by calling the `engine_createBlock` RPC.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_createBlock",
@@ -151,7 +152,7 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 In addition to finalizing blocks at the time of creating them, they may also be finalized later by using the RPC call `engine_finalizeBlock`.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_finalizeBlock",
@@ -175,11 +176,11 @@ Developers can forward blocks and revert blocks to requested block heights.
 Forwarding blocks to requested block height by calling `engine_forwardBlocksTo`.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_forwardBlocksTo",
-      "params": [120, null]
+      "params": [120]  
     }'
 ```
 
@@ -191,14 +192,14 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 Reverting blocks to requested block height by calling `engine_revertBlocksTo`.
 
 Note that reverting finalized blocks only works when node is launched with archive mode `--state-pruning archive` (or `--pruning archive`) since reverting blocks requires past blocks' states.
-When blocks' states are pruned, RPC won't revert finalized blocks.
+When blocks' states are pruned, **RPC won't revert finalized blocks**.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_revertBlocksTo",
-      "params": [50, null]
+      "params": [50]
     }'
 ```
 

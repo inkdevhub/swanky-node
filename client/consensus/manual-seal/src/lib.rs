@@ -9,7 +9,7 @@ use sc_consensus::{
 	import_queue::{BasicQueue, BoxBlockImport, Verifier},
 };
 use sp_blockchain::HeaderBackend;
-use sp_consensus::{CacheKeyId, Environment, Proposer, SelectChain};
+use sp_consensus::{Environment, Proposer, SelectChain};
 use sp_core::traits::SpawnNamed;
 use sp_inherents::CreateInherentDataProviders;
 use sp_runtime::{traits::Block as BlockT, ConsensusEngineId};
@@ -46,10 +46,10 @@ impl<B: BlockT> Verifier<B> for ManualSealVerifier {
 	async fn verify(
 		&mut self,
 		mut block: BlockImportParams<B, ()>,
-	) -> Result<(BlockImportParams<B, ()>, Option<Vec<(CacheKeyId, Vec<u8>)>>), String> {
+	) -> Result<BlockImportParams<B, ()>, String> {
 		block.finalized = false;
 		block.fork_choice = Some(ForkChoiceStrategy::LongestChain);
-		Ok((block, None))
+		Ok(block)
 	}
 }
 
@@ -68,7 +68,7 @@ where
 
 /// Params required to start the instant sealing authorship task.
 pub struct ManualSealParams<B: BlockT, BI, E, C: ProvideRuntimeApi<B>, TP, SC, CS, CIDP, P> {
-	/// Block import instance for well. importing blocks.
+	/// Block import instance.
 	pub block_import: BI,
 
 	/// The environment we are producing blocks for.
@@ -120,17 +120,19 @@ pub struct InstantSealParams<B: BlockT, BI, E, C: ProvideRuntimeApi<B>, TP, SC, 
 	pub create_inherent_data_providers: CIDP,
 }
 
+/// Params required to start the delayed finalization task.
 pub struct DelayedFinalizeParams<C, S> {
-	/// Block import instance for well. importing blocks.
+	/// Block import instance.
 	pub client: Arc<C>,
 
+	/// Handle for spawning delayed finalization tasks.
 	pub spawn_handle: S,
 
 	/// The delay in seconds before a block is finalized.
 	pub delay_sec: u64,
 }
 
-/// Creates the background authorship task for the manual seal engine.
+/// Creates the background authorship task for the manually seal engine.
 pub async fn run_manual_seal<B, BI, CB, E, C, TP, SC, CS, CIDP, P>(
 	ManualSealParams {
 		mut block_import,
