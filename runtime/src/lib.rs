@@ -270,7 +270,7 @@ parameter_types! {
 }
 
 impl pallet_balances::Config for Runtime {
-	type MaxLocks = MaxLocks;
+	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	/// The type for recording an account's balance.
@@ -661,18 +661,18 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl pallet_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance> for Runtime {
-		fn account(account_id: AccountId) -> pallet_balances::AccountData<Balance> {
-			Balances::account(&account_id)
-		}
+	// impl pallet_balances_rpc_runtime_api::BalancesApi<Block, AccountId, Balance> for Runtime {
+	// 	fn account(account_id: AccountId) -> pallet_balances::AccountData<Balance> {
+	// 		Balances::account(&account_id)
+	// 	}
 
-		fn get_set_free_balance_extrinsic(account_id: AccountId, free_balance: Balance) -> <Block as BlockT>::Extrinsic {
-			let timestamp = Timestamp::now();
-			UncheckedExtrinsic::new_unsigned(
-				pallet_balances::Call::<Runtime>::set_free_balance { who: sp_runtime::MultiAddress::Id(account_id), new_free: free_balance, magic_number: timestamp.into() }.into()
-			)
-		}
-	}
+	// 	fn get_set_free_balance_extrinsic(account_id: AccountId, free_balance: Balance) -> <Block as BlockT>::Extrinsic {
+	// 		let timestamp = Timestamp::now();
+	// 		UncheckedExtrinsic::new_unsigned(
+	// 			pallet_balances::Call::<Runtime>::set_free_balance { who: sp_runtime::MultiAddress::Id(account_id), new_free: free_balance, magic_number: timestamp.into() }.into()
+	// 		)
+	// 	}
+	// }
 
 	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash, EventRecord>
 		for Runtime

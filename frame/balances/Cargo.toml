@@ -22,12 +22,12 @@ scale-info = { version = "2.5.0", default-features = false, features = ["derive"
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 serde = { version = "1.0.151", features = ["derive"] }
-paste = "1.0.12"
 
 [dev-dependencies]
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+paste = "1.0.12"
 
 [features]
 default = ["std"]

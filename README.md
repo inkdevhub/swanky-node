@@ -130,7 +130,7 @@ Swanky Node enables both Manual seal and Instant seal.
 We can tell the node to author a block by calling the `engine_createBlock` RPC.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_createBlock",
@@ -152,7 +152,7 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 In addition to finalizing blocks at the time of creating them, they may also be finalized later by using the RPC call `engine_finalizeBlock`.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_finalizeBlock",
@@ -176,11 +176,11 @@ Developers can forward blocks and revert blocks to requested block heights.
 Forwarding blocks to requested block height by calling `engine_forwardBlocksTo`.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_forwardBlocksTo",
-      "params": [120, null]
+      "params": [120]  
     }'
 ```
 
@@ -192,14 +192,14 @@ $ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d
 Reverting blocks to requested block height by calling `engine_revertBlocksTo`.
 
 Note that reverting finalized blocks only works when node is launched with archive mode `--state-pruning archive` (or `--pruning archive`) since reverting blocks requires past blocks' states.
-When blocks' states are pruned, RPC won't revert finalized blocks.
+When blocks' states are pruned, **RPC won't revert finalized blocks**.
 
 ```bash
-$ curl http://localhost:9933 -H "Content-Type:application/json;charset=utf-8" -d   '{                                                                                  feat/forward-revert-blocks ✭
+$ curl http://127.0.0.1:9944 -H "Content-Type:application/json;charset=utf-8" -d   '{
      "jsonrpc":"2.0",
       "id":1,
       "method":"engine_revertBlocksTo",
-      "params": [50, null]
+      "params": [50]
     }'
 ```
 
