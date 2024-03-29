@@ -205,7 +205,10 @@ type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{pallet_prelude::*, traits::{fungible::Credit, tokens::Precision}};
+	use frame_support::{
+		pallet_prelude::*,
+		traits::{fungible::Credit, tokens::Precision},
+	};
 	use frame_system::pallet_prelude::*;
 
 	pub type CreditOf<T, I> = Credit<<T as frame_system::Config>::AccountId, Pallet<T, I>>;
@@ -669,21 +672,22 @@ pub mod pallet {
 			let existential_deposit = T::ExistentialDeposit::get();
 
 			// First we try to modify the account's balance to the forced balance.
-			let (old_free, old_reserved, new_free, new_reserved) = Self::mutate_account_handling_dust(&who, |account| {
-				let old_free = account.free;
-				let old_reserved = account.reserved;
+			let (old_free, old_reserved, new_free, new_reserved) =
+				Self::mutate_account_handling_dust(&who, |account| {
+					let old_free = account.free;
+					let old_reserved = account.reserved;
 
-				let wipeout = new_free < existential_deposit;
+					let wipeout = new_free < existential_deposit;
 
-				let new_free = if wipeout { Zero::zero() } else { new_free };
-				// No change on reserved_balance unless account is wiped out.
-				let new_reserved = if wipeout { Zero::zero() } else { old_reserved };
+					let new_free = if wipeout { Zero::zero() } else { new_free };
+					// No change on reserved_balance unless account is wiped out.
+					let new_reserved = if wipeout { Zero::zero() } else { old_reserved };
 
-				account.free = new_free;
-				account.reserved = new_reserved;
-				
-				(old_free, old_reserved, new_free, new_reserved)
-			})?;
+					account.free = new_free;
+					account.reserved = new_reserved;
+
+					(old_free, old_reserved, new_free, new_reserved)
+				})?;
 
 			// This will adjust the total issuance, which was not done by the `mutate_account`
 			// above.
@@ -806,7 +810,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?;
 			if who.is_empty() {
-				return Ok(Pays::Yes.into())
+				return Ok(Pays::Yes.into());
 			}
 			let mut upgrade_count = 0;
 			for i in &who {
@@ -889,7 +893,7 @@ pub mod pallet {
 		pub fn ensure_upgraded(who: &T::AccountId) -> bool {
 			let mut a = T::AccountStore::get(who);
 			if a.flags.is_new_logic() {
-				return false
+				return false;
 			}
 			a.flags.set_new_logic();
 			if !a.reserved.is_zero() && a.frozen.is_zero() {
@@ -913,7 +917,7 @@ pub mod pallet {
 				Ok(())
 			});
 			Self::deposit_event(Event::Upgraded { who: who.clone() });
-			return true
+			return true;
 		}
 
 		/// Get the free balance of an account.
@@ -1236,7 +1240,7 @@ pub mod pallet {
 			status: Status,
 		) -> Result<T::Balance, DispatchError> {
 			if value.is_zero() {
-				return Ok(Zero::zero())
+				return Ok(Zero::zero());
 			}
 
 			let max = <Self as fungible::InspectHold<_>>::reducible_total_balance_on_hold(
@@ -1251,7 +1255,7 @@ pub mod pallet {
 				return match status {
 					Status::Free => Ok(actual.saturating_sub(Self::unreserve(slashed, actual))),
 					Status::Reserved => Ok(actual),
-				}
+				};
 			}
 
 			let ((_, maybe_dust_1), maybe_dust_2) = Self::try_mutate_account(
@@ -1260,16 +1264,18 @@ pub mod pallet {
 					ensure!(!is_new, Error::<T, I>::DeadAccount);
 					Self::try_mutate_account(slashed, |from_account, _| -> DispatchResult {
 						match status {
-							Status::Free =>
+							Status::Free => {
 								to_account.free = to_account
 									.free
 									.checked_add(&actual)
-									.ok_or(ArithmeticError::Overflow)?,
-							Status::Reserved =>
+									.ok_or(ArithmeticError::Overflow)?
+							},
+							Status::Reserved => {
 								to_account.reserved = to_account
 									.reserved
 									.checked_add(&actual)
-									.ok_or(ArithmeticError::Overflow)?,
+									.ok_or(ArithmeticError::Overflow)?
+							},
 						}
 						from_account.reserved.saturating_reduce(actual);
 						Ok(())

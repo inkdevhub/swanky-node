@@ -159,8 +159,9 @@ mod benchmarks {
 		// and reap this user.
 		let recipient: T::AccountId = account("recipient", 0, SEED);
 		let recipient_lookup = T::Lookup::unlookup(recipient.clone());
-		let transfer_amount =
-			existential_deposit.saturating_mul((ED_MULTIPLIER - 1).into()).saturating_add(1u32.into());
+		let transfer_amount = existential_deposit
+			.saturating_mul((ED_MULTIPLIER - 1).into())
+			.saturating_add(1u32.into());
 
 		#[extrinsic_call]
 		_(RawOrigin::Root, source_lookup, recipient_lookup, transfer_amount);

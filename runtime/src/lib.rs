@@ -127,7 +127,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// 2^128-1         Relay chain token (KSM)
 pub type AssetId = u128;
 
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -154,7 +153,6 @@ pub const MICROUNIT: Balance = 1_000_000_000_000;
 pub const MILLIUNIT: Balance = 1_000 * MICROUNIT;
 pub const UNIT: Balance = 1_000 * MILLIUNIT;
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
-
 
 pub const STORAGE_BYTE_FEE: Balance = 100 * MICROUNIT;
 

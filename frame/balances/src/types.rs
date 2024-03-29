@@ -20,7 +20,10 @@
 use crate::{Config, CreditOf, Event, Pallet};
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::ops::BitOr;
-use frame_support::{traits::{Imbalance, LockIdentifier, OnUnbalanced, WithdrawReasons}, RuntimeDebug};
+use frame_support::{
+	traits::{Imbalance, LockIdentifier, OnUnbalanced, WithdrawReasons},
+	RuntimeDebug,
+};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -53,7 +56,7 @@ impl BitOr for Reasons {
 	type Output = Reasons;
 	fn bitor(self, other: Reasons) -> Reasons {
 		if self == other {
-			return self
+			return self;
 		}
 		Reasons::All
 	}

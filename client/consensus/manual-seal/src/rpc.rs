@@ -170,7 +170,7 @@ where
 		if height <= best_number {
 			return Err(JsonRpseeError::Custom(
 				"Target height is lower than current best height".into(),
-			))
+			));
 		}
 
 		let diff = height - best_number;
@@ -200,7 +200,7 @@ where
 		if height >= best_number {
 			return Err(JsonRpseeError::Custom(
 				"Target height is higher than current best height".into(),
-			))
+			));
 		}
 
 		let diff = best_number - height;
