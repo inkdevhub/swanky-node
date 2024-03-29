@@ -12,7 +12,7 @@ use sp_runtime::traits::{Block as BlockT, Header as HeaderT};
 use std::{sync::Arc, time::Duration};
 
 /// max duration for creating a proposal in secs
-pub const MAX_PROPOSAL_DURATION: u64 = 240;
+pub const MAX_PROPOSAL_DURATION: u64 = 180;
 
 /// params for sealing a new block
 pub struct SealBlockParams<'a, B: BlockT, BI, SC, C: ProvideRuntimeApi<B>, E, TP, CIDP, P> {
